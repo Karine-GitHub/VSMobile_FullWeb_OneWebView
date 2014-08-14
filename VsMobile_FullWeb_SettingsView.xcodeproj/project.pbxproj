@@ -12,13 +12,22 @@
 		84C71630199CCEE000E023E1 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C7162F199CCEE000E023E1 /* UIKit.framework */; };
 		84C71636199CCEE000E023E1 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 84C71634199CCEE000E023E1 /* InfoPlist.strings */; };
 		84C71638199CCEE000E023E1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C71637199CCEE000E023E1 /* main.m */; };
-		84C7163C199CCEE000E023E1 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C7163B199CCEE000E023E1 /* AppDelegate.m */; };
 		84C7163E199CCEE000E023E1 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84C7163D199CCEE000E023E1 /* Images.xcassets */; };
 		84C71645199CCEE000E023E1 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C71644199CCEE000E023E1 /* XCTest.framework */; };
 		84C71646199CCEE000E023E1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C7162B199CCEE000E023E1 /* Foundation.framework */; };
 		84C71647199CCEE000E023E1 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C7162F199CCEE000E023E1 /* UIKit.framework */; };
 		84C7164F199CCEE000E023E1 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 84C7164D199CCEE000E023E1 /* InfoPlist.strings */; };
 		84C71651199CCEE000E023E1 /* VsMobile_FullWeb_SettingsViewTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C71650199CCEE000E023E1 /* VsMobile_FullWeb_SettingsViewTests.m */; };
+		84C71668199CCF3400E023E1 /* 20-gear2.png in Resources */ = {isa = PBXBuildFile; fileRef = 84C7165A199CCF3300E023E1 /* 20-gear2.png */; };
+		84C71669199CCF3400E023E1 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C7165C199CCF3300E023E1 /* AppDelegate.m */; };
+		84C7166C199CCF3400E023E1 /* DetailsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C71663199CCF3400E023E1 /* DetailsViewController.m */; };
+		84C7166D199CCF3400E023E1 /* MenuViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C71665199CCF3400E023E1 /* MenuViewController.m */; };
+		84C7166E199CCF3400E023E1 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C71667199CCF3400E023E1 /* Reachability.m */; };
+		84C71670199CCFC800E023E1 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C7166F199CCFC800E023E1 /* CoreTelephony.framework */; };
+		84C71672199CCFD100E023E1 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C71671199CCFD100E023E1 /* SystemConfiguration.framework */; };
+		84C71674199CCFE000E023E1 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C71673199CCFE000E023E1 /* MessageUI.framework */; };
+		84C71677199CD11100E023E1 /* Main_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 84C71675199CD11100E023E1 /* Main_iPhone.storyboard */; };
+		84C71678199CD11100E023E1 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 84C71676199CD11100E023E1 /* Main_iPad.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,14 +49,26 @@
 		84C71635199CCEE000E023E1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		84C71637199CCEE000E023E1 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		84C71639199CCEE000E023E1 /* VsMobile_FullWeb_SettingsView-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VsMobile_FullWeb_SettingsView-Prefix.pch"; sourceTree = "<group>"; };
-		84C7163A199CCEE000E023E1 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		84C7163B199CCEE000E023E1 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		84C7163D199CCEE000E023E1 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		84C71643199CCEE000E023E1 /* VsMobile_FullWeb_SettingsViewTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VsMobile_FullWeb_SettingsViewTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		84C71644199CCEE000E023E1 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		84C7164C199CCEE000E023E1 /* VsMobile_FullWeb_SettingsViewTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "VsMobile_FullWeb_SettingsViewTests-Info.plist"; sourceTree = "<group>"; };
 		84C7164E199CCEE000E023E1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		84C71650199CCEE000E023E1 /* VsMobile_FullWeb_SettingsViewTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VsMobile_FullWeb_SettingsViewTests.m; sourceTree = "<group>"; };
+		84C7165A199CCF3300E023E1 /* 20-gear2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "20-gear2.png"; sourceTree = "<group>"; };
+		84C7165B199CCF3300E023E1 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		84C7165C199CCF3300E023E1 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		84C71662199CCF3300E023E1 /* DetailsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DetailsViewController.h; sourceTree = "<group>"; };
+		84C71663199CCF3400E023E1 /* DetailsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DetailsViewController.m; sourceTree = "<group>"; };
+		84C71664199CCF3400E023E1 /* MenuViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MenuViewController.h; sourceTree = "<group>"; };
+		84C71665199CCF3400E023E1 /* MenuViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MenuViewController.m; sourceTree = "<group>"; };
+		84C71666199CCF3400E023E1 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
+		84C71667199CCF3400E023E1 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
+		84C7166F199CCFC800E023E1 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
+		84C71671199CCFD100E023E1 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		84C71673199CCFE000E023E1 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
+		84C71675199CD11100E023E1 /* Main_iPhone.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main_iPhone.storyboard; sourceTree = "<group>"; };
+		84C71676199CD11100E023E1 /* Main_iPad.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main_iPad.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,6 +76,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84C71674199CCFE000E023E1 /* MessageUI.framework in Frameworks */,
+				84C71672199CCFD100E023E1 /* SystemConfiguration.framework in Frameworks */,
+				84C71670199CCFC800E023E1 /* CoreTelephony.framework in Frameworks */,
 				84C7162E199CCEE000E023E1 /* CoreGraphics.framework in Frameworks */,
 				84C71630199CCEE000E023E1 /* UIKit.framework in Frameworks */,
 				84C7162C199CCEE000E023E1 /* Foundation.framework in Frameworks */,
@@ -96,6 +120,9 @@
 		84C7162A199CCEE000E023E1 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				84C71673199CCFE000E023E1 /* MessageUI.framework */,
+				84C71671199CCFD100E023E1 /* SystemConfiguration.framework */,
+				84C7166F199CCFC800E023E1 /* CoreTelephony.framework */,
 				84C7162B199CCEE000E023E1 /* Foundation.framework */,
 				84C7162D199CCEE000E023E1 /* CoreGraphics.framework */,
 				84C7162F199CCEE000E023E1 /* UIKit.framework */,
@@ -107,8 +134,17 @@
 		84C71631199CCEE000E023E1 /* VsMobile_FullWeb_SettingsView */ = {
 			isa = PBXGroup;
 			children = (
-				84C7163A199CCEE000E023E1 /* AppDelegate.h */,
-				84C7163B199CCEE000E023E1 /* AppDelegate.m */,
+				84C71675199CD11100E023E1 /* Main_iPhone.storyboard */,
+				84C71676199CD11100E023E1 /* Main_iPad.storyboard */,
+				84C7165A199CCF3300E023E1 /* 20-gear2.png */,
+				84C7165B199CCF3300E023E1 /* AppDelegate.h */,
+				84C7165C199CCF3300E023E1 /* AppDelegate.m */,
+				84C71662199CCF3300E023E1 /* DetailsViewController.h */,
+				84C71663199CCF3400E023E1 /* DetailsViewController.m */,
+				84C71664199CCF3400E023E1 /* MenuViewController.h */,
+				84C71665199CCF3400E023E1 /* MenuViewController.m */,
+				84C71666199CCF3400E023E1 /* Reachability.h */,
+				84C71667199CCF3400E023E1 /* Reachability.m */,
 				84C7163D199CCEE000E023E1 /* Images.xcassets */,
 				84C71632199CCEE000E023E1 /* Supporting Files */,
 			);
@@ -191,6 +227,9 @@
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "___FULLUSERNAME___";
 				TargetAttributes = {
+					84C71627199CCEE000E023E1 = {
+						DevelopmentTeam = 3BZ9RQY6AQ;
+					};
 					84C71642199CCEE000E023E1 = {
 						TestTargetID = 84C71627199CCEE000E023E1;
 					};
@@ -202,6 +241,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 84C7161F199CCEE000E023E1;
 			productRefGroup = 84C71629199CCEE000E023E1 /* Products */;
@@ -219,7 +259,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84C71678199CD11100E023E1 /* Main_iPad.storyboard in Resources */,
+				84C71677199CD11100E023E1 /* Main_iPhone.storyboard in Resources */,
 				84C71636199CCEE000E023E1 /* InfoPlist.strings in Resources */,
+				84C71668199CCF3400E023E1 /* 20-gear2.png in Resources */,
 				84C7163E199CCEE000E023E1 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -239,8 +282,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84C7163C199CCEE000E023E1 /* AppDelegate.m in Sources */,
+				84C7166C199CCF3400E023E1 /* DetailsViewController.m in Sources */,
+				84C71669199CCF3400E023E1 /* AppDelegate.m in Sources */,
 				84C71638199CCEE000E023E1 /* main.m in Sources */,
+				84C7166D199CCF3400E023E1 /* MenuViewController.m in Sources */,
+				84C7166E199CCF3400E023E1 /* Reachability.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -359,6 +405,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "VsMobile_FullWeb_SettingsView/VsMobile_FullWeb_SettingsView-Prefix.pch";
 				INFOPLIST_FILE = "VsMobile_FullWeb_SettingsView/VsMobile_FullWeb_SettingsView-Info.plist";
@@ -372,6 +419,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "VsMobile_FullWeb_SettingsView/VsMobile_FullWeb_SettingsView-Prefix.pch";
 				INFOPLIST_FILE = "VsMobile_FullWeb_SettingsView/VsMobile_FullWeb_SettingsView-Info.plist";
