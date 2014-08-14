@@ -25,7 +25,7 @@ NSString *APPLICATION_SUPPORT_PATH;
     
     BOOL isConnected = false;
     // Check settings
-    if (self.synchroIsEnabled) {
+    //if (self.synchroIsEnabled) {
         switch (networkStatus) {
             case NotReachable:
                 isConnected = false;
@@ -41,11 +41,11 @@ NSString *APPLICATION_SUPPORT_PATH;
             default:
                 break;
         }
-    }
+    /*}
     else {
         self.isDownloadedByFile = false;
         self.isDownloadedByNetwork = false;
-    }
+    }*/
     
     return isConnected;
 }
@@ -374,11 +374,9 @@ NSString *APPLICATION_SUPPORT_PATH;
         UINavigationController *navigationController = [splitViewController.viewControllers lastObject];
         splitViewController.delegate = (id)navigationController.topViewController;
     }
-    [self registerDefaultsFromSettingsBundle];
-    [self getSettings];
+    //[self registerDefaultsFromSettingsBundle];
+    //[self getSettings];
     [self configureApp];
-    
-    
     
     return YES;
 }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8480C645199CF47C00368E81 /* RefreshSettingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8480C644199CF47C00368E81 /* RefreshSettingViewController.m */; };
 		84C7162C199CCEE000E023E1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C7162B199CCEE000E023E1 /* Foundation.framework */; };
 		84C7162E199CCEE000E023E1 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C7162D199CCEE000E023E1 /* CoreGraphics.framework */; };
 		84C71630199CCEE000E023E1 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C7162F199CCEE000E023E1 /* UIKit.framework */; };
@@ -28,6 +29,8 @@
 		84C71674199CCFE000E023E1 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C71673199CCFE000E023E1 /* MessageUI.framework */; };
 		84C71677199CD11100E023E1 /* Main_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 84C71675199CD11100E023E1 /* Main_iPhone.storyboard */; };
 		84C71678199CD11100E023E1 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 84C71676199CD11100E023E1 /* Main_iPad.storyboard */; };
+		84C7167B199CD9DD00E023E1 /* SettingsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C7167A199CD9DD00E023E1 /* SettingsView.m */; };
+		84C7167D199CDF8A00E023E1 /* Configuration.plist in Resources */ = {isa = PBXBuildFile; fileRef = 84C7167C199CDF8A00E023E1 /* Configuration.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,6 +44,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		8480C643199CF47C00368E81 /* RefreshSettingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RefreshSettingViewController.h; sourceTree = "<group>"; };
+		8480C644199CF47C00368E81 /* RefreshSettingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RefreshSettingViewController.m; sourceTree = "<group>"; };
 		84C71628199CCEE000E023E1 /* VsMobile_FullWeb_SettingsView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VsMobile_FullWeb_SettingsView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		84C7162B199CCEE000E023E1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		84C7162D199CCEE000E023E1 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -69,6 +74,9 @@
 		84C71673199CCFE000E023E1 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		84C71675199CD11100E023E1 /* Main_iPhone.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main_iPhone.storyboard; sourceTree = "<group>"; };
 		84C71676199CD11100E023E1 /* Main_iPad.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main_iPad.storyboard; sourceTree = "<group>"; };
+		84C71679199CD9DD00E023E1 /* SettingsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SettingsView.h; sourceTree = "<group>"; };
+		84C7167A199CD9DD00E023E1 /* SettingsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingsView.m; sourceTree = "<group>"; };
+		84C7167C199CDF8A00E023E1 /* Configuration.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Configuration.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,6 +142,7 @@
 		84C71631199CCEE000E023E1 /* VsMobile_FullWeb_SettingsView */ = {
 			isa = PBXGroup;
 			children = (
+				84C7167C199CDF8A00E023E1 /* Configuration.plist */,
 				84C71675199CD11100E023E1 /* Main_iPhone.storyboard */,
 				84C71676199CD11100E023E1 /* Main_iPad.storyboard */,
 				84C7165A199CCF3300E023E1 /* 20-gear2.png */,
@@ -147,6 +156,10 @@
 				84C71667199CCF3400E023E1 /* Reachability.m */,
 				84C7163D199CCEE000E023E1 /* Images.xcassets */,
 				84C71632199CCEE000E023E1 /* Supporting Files */,
+				84C71679199CD9DD00E023E1 /* SettingsView.h */,
+				84C7167A199CD9DD00E023E1 /* SettingsView.m */,
+				8480C643199CF47C00368E81 /* RefreshSettingViewController.h */,
+				8480C644199CF47C00368E81 /* RefreshSettingViewController.m */,
 			);
 			path = VsMobile_FullWeb_SettingsView;
 			sourceTree = "<group>";
@@ -262,6 +275,7 @@
 				84C71678199CD11100E023E1 /* Main_iPad.storyboard in Resources */,
 				84C71677199CD11100E023E1 /* Main_iPhone.storyboard in Resources */,
 				84C71636199CCEE000E023E1 /* InfoPlist.strings in Resources */,
+				84C7167D199CDF8A00E023E1 /* Configuration.plist in Resources */,
 				84C71668199CCF3400E023E1 /* 20-gear2.png in Resources */,
 				84C7163E199CCEE000E023E1 /* Images.xcassets in Resources */,
 			);
@@ -284,9 +298,11 @@
 			files = (
 				84C7166C199CCF3400E023E1 /* DetailsViewController.m in Sources */,
 				84C71669199CCF3400E023E1 /* AppDelegate.m in Sources */,
+				8480C645199CF47C00368E81 /* RefreshSettingViewController.m in Sources */,
 				84C71638199CCEE000E023E1 /* main.m in Sources */,
 				84C7166D199CCF3400E023E1 /* MenuViewController.m in Sources */,
 				84C7166E199CCF3400E023E1 /* Reachability.m in Sources */,
+				84C7167B199CD9DD00E023E1 /* SettingsView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -487,6 +503,7 @@
 				84C71656199CCEE000E023E1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		84C71657199CCEE000E023E1 /* Build configuration list for PBXNativeTarget "VsMobile_FullWeb_SettingsViewTests" */ = {
 			isa = XCConfigurationList;
@@ -495,6 +512,7 @@
 				84C71659199CCEE000E023E1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
