@@ -175,7 +175,7 @@
 #pragma mark - Alert View
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if (buttonIndex == 0) {
+    if ([alertView cancelButtonIndex] == buttonIndex) {
         // Fermer l'application
         //Home button
         UIApplication *app = [UIApplication sharedApplication];

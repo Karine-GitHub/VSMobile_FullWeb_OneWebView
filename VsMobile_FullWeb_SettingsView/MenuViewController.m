@@ -43,7 +43,7 @@
     appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     NSLog(@"Dl by Network : %hhd", appDel.isDownloadedByNetwork);
     NSLog(@"Dl by File : %hhd", appDel.isDownloadedByFile);
-
+    
     // Get Application json file
     @try {
         if (appDel.isDownloadedByNetwork || appDel.isDownloadedByFile) {
@@ -62,23 +62,18 @@
             }
         }
         else {
-            /*if (!appDel.synchroIsEnabled) {
-             errorMsg = @"Impossible to download content. The network connection is disabled. Please enable the synchronization.";
-             // Go to Settings view
-             self.appSettingsViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"settingsView"];
-             [self performSegueWithIdentifier:@"settings" sender:self.Settings];
-             self.appSettingsViewController = [[IASKAppSettingsViewController alloc] init];
-             [self.navigationController pushViewController:self.appSettingsViewController animated:YES];
-             } else {*/
-            if (!appDel.isDownloadedByFile) {
+            UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Application fails" message:errorMsg delegate:self cancelButtonTitle:@"Quit" otherButtonTitles:nil];
+            if (appDel.cacheIsEnabled) {
+                errorMsg = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Do you want to disable it ?";
+                [alertNoConnection addButtonWithTitle:@"Settings"];
+            } else if (!appDel.isDownloadedByFile) {
                 errorMsg = @"Impossible to download content file. The application will shut down. Sorry for the inconvenience.";
+                
             } else if (!appDel.isDownloadedByNetwork) {
                 errorMsg = @"Impossible to download content on the server. The network connection is too low or off. The application will shut down. Please try later.";
             }
             
-            UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Application fails" message:errorMsg delegate:self cancelButtonTitle:@"Quit" otherButtonTitles:nil];
             [alertNoConnection show];
-            //}
         }
     }
     @catch (NSException *e) {
@@ -182,7 +177,7 @@
 #pragma mark - Alert View
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if (buttonIndex == 0) {
+    if ([alertView cancelButtonIndex] == buttonIndex) {
         // Fermer l'application
         //Home button
         UIApplication *app = [UIApplication sharedApplication];
@@ -190,6 +185,10 @@
         // Wait while app is going background
         [NSThread sleepForTimeInterval:2.0];
         exit(0);
+    } else {
+    // Go to settings
+        self.showSettings = [self.storyboard instantiateViewControllerWithIdentifier:@"settingsView"];
+        [self.navigationController pushViewController:self.showSettings animated:YES];
     }
 }
 

@@ -24,8 +24,6 @@ NSString *APPLICATION_SUPPORT_PATH;
     NSLog(@"Network Status : %d", networkStatus);
     
     BOOL isConnected = false;
-    // Check settings
-    //if (self.synchroIsEnabled) {
         switch (networkStatus) {
             case NotReachable:
                 isConnected = false;
@@ -34,18 +32,11 @@ NSString *APPLICATION_SUPPORT_PATH;
                 isConnected = true;
                 break;
             case ReachableViaWWAN:
-                if (!self.synchroOnlyWifi) {
-                    isConnected = [self testFastConnection];
-                }
+                isConnected = [self testFastConnection];
                 break;
             default:
                 break;
         }
-    /*}
-    else {
-        self.isDownloadedByFile = false;
-        self.isDownloadedByNetwork = false;
-    }*/
     
     return isConnected;
 }
@@ -101,12 +92,25 @@ NSString *APPLICATION_SUPPORT_PATH;
 
 - (void) getSettings
 {
-    NSLog(@"Syncho enabled = %hhd", [[[NSUserDefaults standardUserDefaults] objectForKey:@"enabled"] boolValue]);
-    NSLog(@"Syncho wifi enabled = %hhd", [[[NSUserDefaults standardUserDefaults] objectForKey:@"wifi"] boolValue]);
-    NSLog(@"Frequency = %ld", (long)[[[NSUserDefaults standardUserDefaults] objectForKey:@"frequency"] integerValue]);
-    self.synchroIsEnabled = [[[NSUserDefaults standardUserDefaults] objectForKey:@"enabled"] boolValue];
-    self.synchroOnlyWifi = [[[NSUserDefaults standardUserDefaults] objectForKey:@"wifi"] boolValue];
-    self.frequency = (NSInteger *)[[[NSUserDefaults standardUserDefaults] objectForKey:@"frequency"] integerValue];
+    // If key exists, get its value else set a default value
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"cache"]) {
+        self.cacheIsEnabled = [[[NSUserDefaults standardUserDefaults] objectForKey:@"cache"] boolValue];
+    } else {
+        self.cacheIsEnabled = false;
+    }
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"roaming"]) {
+        self.roamingIsEnabled = [[[NSUserDefaults standardUserDefaults] objectForKey:@"roaming"] boolValue];
+    } else {
+        self.roamingIsEnabled = true;
+    }
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"durationChoice"]) {
+        self.refreshInterval = (NSInteger *)[[[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] integerValue];
+        self.refreshDuration = [[[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"] stringValue];
+    } else {
+        self.refreshInterval = Nil;
+        self.refreshDuration = Nil;
+    }
 }
 
 - (void) saveFile:(NSString *)url fileName:(NSString *)fileName dirName:(NSString*)dirName
@@ -133,7 +137,7 @@ NSString *APPLICATION_SUPPORT_PATH;
                     // Several directories
                     NSString *firstDir = [dirName substringToIndex:getDir.location];
                     NSString *sndDir = [dirName substringFromIndex:getDir.location];
-                    if (![fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, firstDir] isDirectory:&isDirectory]) {
+                    if (![fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, firstDir] isDirectory:&isDirectory] || self.forceDownloading) {
                         success = [fileManager createDirectoryAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, firstDir] withIntermediateDirectories:YES attributes:nil error:&error];
                         if (!success) {
                             NSLog(@"An error occured during the Creation of Template folder : %@", error);
@@ -151,7 +155,7 @@ NSString *APPLICATION_SUPPORT_PATH;
                 } else {
                     // Only one directory
                     path = [NSString stringWithFormat:@"%@%@/%@", APPLICATION_SUPPORT_PATH, dirName, fileName];
-                    if (![fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, dirName] isDirectory:&isDirectory]) {
+                    if (![fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, dirName] isDirectory:&isDirectory] || self.forceDownloading) {
                         success = [fileManager createDirectoryAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, dirName] withIntermediateDirectories:YES attributes:nil error:&error];
                         if (!success) {
                             NSLog(@"An error occured during the Creation of Template folder : %@", error);
@@ -161,7 +165,7 @@ NSString *APPLICATION_SUPPORT_PATH;
             }
             
             NSURL *location = [NSURL URLWithString:url];
-            if (![fileManager fileExistsAtPath:path]) {
+            if (![fileManager fileExistsAtPath:path] || self.forceDownloading) {
                 success =[[NSData dataWithContentsOfURL:location] writeToFile:path options:NSDataWritingAtomic error:&error];
                 if (!success) {
                     NSLog(@"An error occured during the Saving of the file %@ : %@", fileName, error);
@@ -232,6 +236,8 @@ NSString *APPLICATION_SUPPORT_PATH;
         NSLog(@"An error occured during the Creation of Application Support folder : %@", error);
     }
     
+    [self getSettings];
+    
     bundle = [[NSBundle mainBundle] pathForResource:@"Configuration" ofType:@"plist"];
     NSDictionary *config = [[NSDictionary alloc] initWithContentsOfFile:bundle];
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
@@ -254,35 +260,37 @@ NSString *APPLICATION_SUPPORT_PATH;
         NSURL *url = [NSURL URLWithString:webApi];
         
         NSString *path = [NSString stringWithFormat:@"%@%@.json", APPLICATION_SUPPORT_PATH, [config objectForKey:@"ApplicationID"]];
-        if (![fileManager fileExistsAtPath:path]) {
-            NSLog(@"File does not exist");
-            // Check Connection
-            success = [self testConnection];
-            if (success) {
-                NSLog(@"Connection is OK");
-                APPLICATION_FILE = [NSData dataWithContentsOfURL:url];
-                success =[[NSData dataWithContentsOfURL:url] writeToFile:path options:NSDataWritingAtomic error:&error];
+        if (![fileManager fileExistsAtPath:path] || self.forceDownloading) {
+            NSLog(@"File does not exist or self.forceDownloading is true");
+            // Check Connection if cache is not enabled
+            if (!self.cacheIsEnabled) {
+                success = [self testConnection];
                 if (success) {
-                    _isDownloadedByNetwork = true;
-                }
-                else {
-                    NSLog(@"An error occured during the Saving of Application File : %@", error);
+                    NSLog(@"Connection is OK");
+                    APPLICATION_FILE = [NSData dataWithContentsOfURL:url];
+                    success =[[NSData dataWithContentsOfURL:url] writeToFile:path options:NSDataWritingAtomic error:&error];
+                    if (success) {
+                        _isDownloadedByNetwork = true;
+                    }
+                    else {
+                        NSLog(@"An error occured during the Saving of Application File : %@", error);
+                    }
                 }
             }
         }
         else {
             NSLog(@"File exists");
             APPLICATION_FILE = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:&error];
-            if (APPLICATION_FILE != nil) {
+            if (APPLICATION_FILE != Nil) {
                 _isDownloadedByFile = true;
             }
             else {
                 NSLog(@"An error occured during the Loading of Application File : %@", error);
             }
         }
-        if (APPLICATION_FILE != nil) {
+        if (APPLICATION_FILE != Nil) {
             self.application = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:APPLICATION_FILE options:NSJSONReadingMutableLeaves error:&error];
-            if (self.application != nil) {
+            if (self.application != Nil) {
                 [self searchDependencies];
             }
             else {
@@ -374,8 +382,7 @@ NSString *APPLICATION_SUPPORT_PATH;
         UINavigationController *navigationController = [splitViewController.viewControllers lastObject];
         splitViewController.delegate = (id)navigationController.topViewController;
     }
-    //[self registerDefaultsFromSettingsBundle];
-    //[self getSettings];
+    
     [self configureApp];
     
     return YES;

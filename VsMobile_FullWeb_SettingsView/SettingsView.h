@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SettingsView : UITableViewController
+@interface SettingsView : UITableViewController <UIAlertViewDelegate>
 
 @property (strong, nonatomic) IBOutlet UITableView *SettingsTable;
 @property (strong, nonatomic) IBOutlet UINavigationItem *Navigate;
@@ -17,10 +17,10 @@
 @property (strong,nonatomic) NSString *refreshValue;
 
 @property (weak, nonatomic) IBOutlet UISwitch *cacheMode;
-@property BOOL enableCache;
+@property (strong, nonatomic) NSNumber *enableCache;
 
 @property (weak, nonatomic) IBOutlet UISwitch *roamingMode;
-@property BOOL enableRoaming;
+@property (strong, nonatomic) NSNumber *enableRoaming;
 
 @property (weak, nonatomic) IBOutlet UILabel *dataSize;
 @property (strong,nonatomic) NSString *dataSizeValue;
@@ -30,5 +30,9 @@
 
 @property (weak, nonatomic) IBOutlet UIButton *downloadData;
 @property (weak, nonatomic) IBOutlet UIButton *deleteCache;
+
+
+@property (strong, nonatomic) NSString *errorMsg;
+
 
 @end

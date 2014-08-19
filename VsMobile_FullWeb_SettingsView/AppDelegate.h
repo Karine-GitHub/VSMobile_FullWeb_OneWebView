@@ -24,9 +24,11 @@ extern NSString *APPLICATION_SUPPORT_PATH;
 @property (strong, nonatomic) NSMutableDictionary *application;
 
 // Settings
-@property BOOL synchroIsEnabled;
-@property BOOL synchroOnlyWifi;
-@property NSInteger *frequency;
+@property BOOL cacheIsEnabled;
+@property BOOL roamingIsEnabled;
+@property NSInteger *refreshInterval;
+@property NSString *refreshDuration;
+@property BOOL forceDownloading;
 
 // Used for checking if downloading is OK (differentiation for setting an appropriate error message)
 @property BOOL isDownloadedByNetwork;
@@ -36,6 +38,7 @@ extern NSString *APPLICATION_SUPPORT_PATH;
 @property (strong, nonatomic) NSString *const OS;
 @property (strong, nonatomic) NSString *deviceType;
 
+- (void) configureApp;
 - (BOOL) testConnection;
 - (BOOL) testFastConnection;
 - (void) registerDefaultsFromSettingsBundle;

@@ -67,7 +67,7 @@
         <!--Settings View - Préférences-->
         <scene sceneID="6i1-13-msR">
             <objects>
-                <tableViewController id="AGk-MO-ZaF" customClass="SettingsView" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="settingsView" id="AGk-MO-ZaF" customClass="SettingsView" sceneMemberID="viewController">
                     <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="singleLineEtched" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="T7o-uH-FD1">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -113,6 +113,9 @@
                                                 <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="left" text="Detail" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="x8I-93-gaB">
                                                     <rect key="frame" x="261" y="11" width="44" height="21"/>
                                                     <autoresizingMask key="autoresizingMask"/>
+                                                    <accessibility key="accessibilityConfiguration">
+                                                        <accessibilityTraits key="traits" none="YES"/>
+                                                    </accessibility>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.55686274509803924" green="0.55686274509803924" blue="0.57647058823529407" alpha="1" colorSpace="calibratedRGB"/>
                                                     <nil key="highlightedColor"/>
@@ -120,7 +123,7 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="EjB-FA-1QR" kind="push" id="Tqv-p7-hFS"/>
+                                            <segue destination="EjB-FA-1QR" kind="push" identifier="refresh" id="Tqv-p7-hFS"/>
                                         </connections>
                                     </tableViewCell>
                                 </cells>
@@ -141,6 +144,9 @@
                                                         <color key="titleColor" cocoaTouchSystemColor="darkTextColor"/>
                                                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                                     </state>
+                                                    <connections>
+                                                        <action selector="dataLoadingClick:" destination="AGk-MO-ZaF" eventType="touchUpInside" id="dwg-xN-Rcp"/>
+                                                    </connections>
                                                 </button>
                                             </subviews>
                                         </tableViewCellContentView>
@@ -162,9 +168,12 @@
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zkH-eh-1CE">
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="zkH-eh-1CE">
                                                     <rect key="frame" x="251" y="6" width="51" height="31"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                    <connections>
+                                                        <action selector="cacheModeValueChanged:" destination="AGk-MO-ZaF" eventType="valueChanged" id="csr-ab-PNb"/>
+                                                    </connections>
                                                 </switch>
                                             </subviews>
                                         </tableViewCellContentView>
@@ -189,6 +198,9 @@
                                                 <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fed-jN-cQp">
                                                     <rect key="frame" x="251" y="6" width="51" height="31"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                    <connections>
+                                                        <action selector="roamingValueChanged:" destination="AGk-MO-ZaF" eventType="valueChanged" id="Ldt-CB-UfC"/>
+                                                    </connections>
                                                 </switch>
                                             </subviews>
                                         </tableViewCellContentView>
@@ -258,6 +270,9 @@
                                                     <state key="normal" title="Vider le cache">
                                                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                                     </state>
+                                                    <connections>
+                                                        <action selector="deleteCacheClick:" destination="AGk-MO-ZaF" eventType="touchUpInside" id="juN-Ll-hwd"/>
+                                                    </connections>
                                                 </button>
                                             </subviews>
                                             <color key="backgroundColor" red="1" green="0.011788656142404319" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
@@ -284,14 +299,13 @@
                         <outlet property="imagesSize" destination="8SP-kd-FQy" id="QTN-7o-eTK"/>
                         <outlet property="refreshChoice" destination="x8I-93-gaB" id="dwJ-0b-mdr"/>
                         <outlet property="roamingMode" destination="fed-jN-cQp" id="Caq-rf-Fdj"/>
-                        <outlet property="userChoice" destination="x8I-93-gaB" id="hKL-fo-VzR"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4H9-97-cr3" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="738" y="900"/>
         </scene>
-        <!--Refresh Setting View Controller - Rafraîssement-->
+        <!--Refresh Setting View Controller - Rafraîchissement-->
         <scene sceneID="K6h-48-e22">
             <objects>
                 <viewController id="EjB-FA-1QR" customClass="RefreshSettingViewController" sceneMemberID="viewController">
@@ -303,11 +317,11 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <pickerView contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rG5-Er-b0u">
+                            <pickerView contentMode="scaleToFill" fixedFrame="YES" restorationIdentifier="intervalPicker" translatesAutoresizingMaskIntoConstraints="NO" id="rG5-Er-b0u">
                                 <rect key="frame" x="0.0" y="203" width="160" height="162"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             </pickerView>
-                            <pickerView contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CWy-Qn-MeG">
+                            <pickerView contentMode="scaleToFill" fixedFrame="YES" restorationIdentifier="durationPicker" translatesAutoresizingMaskIntoConstraints="NO" id="CWy-Qn-MeG">
                                 <rect key="frame" x="160" y="203" width="160" height="162"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             </pickerView>
@@ -321,7 +335,7 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Rafraîssement" id="hhz-NP-Z5X">
+                    <navigationItem key="navigationItem" title="Rafraîchissement" id="hhz-NP-Z5X">
                         <barButtonItem key="backBarButtonItem" title="Préférences" id="W2l-Bl-In8"/>
                     </navigationItem>
                     <connections>
