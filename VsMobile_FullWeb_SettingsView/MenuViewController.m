@@ -187,8 +187,9 @@
         exit(0);
     } else {
     // Go to settings
-        self.showSettings = [self.storyboard instantiateViewControllerWithIdentifier:@"settingsView"];
-        [self.navigationController pushViewController:self.showSettings animated:YES];
+        SettingsView *showSettings = [[SettingsView alloc] init];
+        showSettings = [self.storyboard instantiateViewControllerWithIdentifier:@"settingsView"];
+        [self.navigationController pushViewController:showSettings animated:YES];
     }
 }
 

@@ -12,7 +12,6 @@
 @interface RefreshSettingViewController : UIViewController <UIPickerViewDataSource, UIPickerViewDelegate>
 
 @property (strong, nonatomic) IBOutlet UIPickerView *interval;
-@property (strong, nonatomic) IBOutlet UIPickerView *duration;
 
 @property (strong, nonatomic) NSMutableArray *intervalValues;
 @property (strong, nonatomic) NSArray *durationValues;

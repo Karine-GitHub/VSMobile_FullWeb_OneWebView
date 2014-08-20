@@ -24,66 +24,53 @@
     return self;
 }
 
+// Set an observer on the method configureApp of AppDelegate Class : it is called in background during the loading of datas. Necessary for refreshing datas & images size.
+- (void)awakeFromNib {
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureApp:) name:@"ConfigureAppNotification" object:nil];
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)configureApp:(NSNotification *)notification {
+    // Set Datas & Images Sizes
+    self.errorMsg = [NSString stringWithFormat:@"The downloading of files is done."];
+    UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Downloading Successful" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    [alertNoConnection show];
+    self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
+    self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+
     self.SettingsTable.delegate = self;
+    
     // Set RefreshChoice text
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"durationChoice"]) {
         self.refreshValue = [NSString stringWithFormat:@"%ld%@", (long)[[[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] integerValue], [[[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"] stringValue]];
     } else {
-        self.refreshValue = @"None";
+        self.refreshValue = @"1 jour";
     }
     self.refreshChoice.text = self.refreshValue;
     
     // Set Datas & Images Sizes
-    self.dataSize.text = [[self getSizeOf:APPLICATION_SUPPORT_PATH] stringValue];
-    self.imagesSize.text = [[self getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] stringValue];
+    self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
+    self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
     
     // Set Cache & Roaming values
     self.enableCache = [NSNumber numberWithBool:self.cacheMode.isOn];
     self.enableRoaming = [NSNumber numberWithBool:self.roamingMode.isOn];
+    
+    self.downloadData.titleLabel.font = [UIFont fontWithName:@"Helvetica Neue" size:17.0];
 }
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
-}
-
-- (NSNumber *) getSizeOf:(NSString *)path
-{
-    // TODO : check dossier images (à soustraire du poids des datas)
-    // NSFileSize works only with file
-    NSNumber *number;
-    unsigned long long ull = 0;
-    NSFileManager *fm = [NSFileManager defaultManager];
-    NSError *err;
-    NSArray *directories = [fm contentsOfDirectoryAtPath:path error:&err];
-    for (NSString *file in directories) {
-        NSDictionary *attributes = [fm attributesOfItemAtPath:[NSString stringWithFormat:@"%@%@",path, file] error:&err];
-        ull += [attributes fileSize];
-        
-        // Check if subdirectories
-        if ([[attributes fileType] isEqualToString:NSFileTypeDirectory]) {
-            NSArray *subdir = [fm contentsOfDirectoryAtPath:[NSString stringWithFormat:@"%@/%@",path, file] error:&err];
-            for (NSString *subFiles in subdir) {
-                NSDictionary *attributes = [fm attributesOfItemAtPath:[NSString stringWithFormat:@"%@%@/%@",path, file, subFiles] error:&err];
-                ull += [attributes fileSize];
-                // Check if sub-subdirectories
-                
-                if ([[attributes fileType] isEqualToString:NSFileTypeDirectory]) {
-                    NSArray *subSubdir = [fm contentsOfDirectoryAtPath:[NSString stringWithFormat:@"%@%@/%@",path, file, subFiles] error:&err];
-                    for (NSString *subSubFiles in subSubdir) {
-                        NSDictionary *attributes = [fm attributesOfItemAtPath:[NSString stringWithFormat:@"%@%@/%@/%@",path, file, subFiles, subSubFiles] error:&err];
-                        ull += [attributes fileSize];
-                    }
-                }
-            }
-        }
-    }
-    number = [NSNumber numberWithUnsignedLongLong:ull];
-    return number;
 }
 
 - (IBAction)cacheModeValueChanged:(id)sender {
@@ -102,34 +89,49 @@
     AppDelegate *ad = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     @try {
         [ad setForceDownloading:YES];
-        [ad configureApp];
+        NSLog(@"Avant runInBackground");
+
+        [ad performSelectorInBackground:@selector(configureApp) withObject:ad];
+        NSLog(@"Après runInBackground");
+
     }
     @catch (NSException *exception) {
         NSString *errorMsg;
         if (ad.cacheIsEnabled) {
             errorMsg = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Please turn it off.";
         } else if (!ad.isDownloadedByNetwork) {
-            errorMsg = @"Impossible to download content on the server. The network connection is too low or off. The application will shut down. Please try later.";
+            errorMsg = @"Impossible to download content on the server. The network connection is too low or off. Please try later.";
         }
-        UIAlertView *alertLoadingFail = [[UIAlertView alloc] initWithTitle:@"Loading fails" message:errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        UIAlertView *alertLoadingFail = [[UIAlertView alloc] initWithTitle:@"Downloading fails" message:errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alertLoadingFail show];
     }
 }
 
 - (IBAction)deleteCacheClick:(id)sender {
-    
+
     @try {
         NSFileManager *fm = [NSFileManager defaultManager];
-        NSError *err;
-        for (NSString *file in [fm contentsOfDirectoryAtPath:APPLICATION_SUPPORT_PATH error:&err]) {
-            NSLog(@"File = %@", file);
-            [fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, file] error:&err];
+        
+        if ([fm contentsOfDirectoryAtPath:APPLICATION_SUPPORT_PATH error:nil].count > 0) {
+            NSError *err = nil;
+            for (NSString *file in [fm contentsOfDirectoryAtPath:APPLICATION_SUPPORT_PATH error:&err]) {
+                [fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, file] error:&err];
+            }
+            if (err) {
+                // TODO : throw exception
+                NSLog(@"An error occured during the Deleting of cache : %@", err);
+                NSException *e = [NSException exceptionWithName:err.localizedDescription reason:err.localizedFailureReason userInfo:err.userInfo];
+                @throw e;
+            }
+            self.errorMsg = [NSString stringWithFormat:@"The deleting of files is done."];
+            UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Deleting Successful" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alertNoConnection show];
+            
         }
-        if (err) {
-            // TODO : throw exception
-            NSLog(@"An error occured during the Deleting of cache : %@", err);
-            NSException *e = [NSException exceptionWithName:err.localizedDescription reason:err.localizedFailureReason userInfo:err.userInfo];
-            @throw e;
+        else {
+            self.errorMsg = [NSString stringWithFormat:@"The cache is already cleaned."];
+            UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Deleting Not Necessary" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alertNoConnection show];
         }
     }
     @catch (NSException *e) {
@@ -140,9 +142,8 @@
     }
     @finally {
         // Refresh dataSize & imagesSize
-        self.dataSize.text = [[self getSizeOf:APPLICATION_SUPPORT_PATH] stringValue];
-        self.imagesSize.text = [[self getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] stringValue];
-        NSLog(@"Datasize : %@    ImageSize : %@", self.dataSize.text , self.imagesSize.text);
+        self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
+        self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
     }
 }
 
@@ -163,16 +164,16 @@
 {
     switch (section) {
         case 2:
-            return 60.0f;
+            return 70.0f;
             break;
         case 3:
             return 40.0f;
             break;
         case 4:
-            return 60.0f;
+            return 70.0f;
             break;
         case 5:
-            return 60.0f;
+            return 80.0f;
             break;
         default:
             return 20.0f;
@@ -184,8 +185,8 @@
 - (UIView *) tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
 {
     UIView *sectionFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 60)];
-    UILabel *sectionFooterLabel = [[UILabel alloc] initWithFrame:CGRectMake(5, 0, tableView.frame.size.width - 5, 55)];
-    sectionFooterLabel.font = [UIFont fontWithName:@"Helvetica" size:10.0];
+    UILabel *sectionFooterLabel = [[UILabel alloc] initWithFrame:CGRectMake(5, 0, tableView.frame.size.width - 5, 60)];
+    sectionFooterLabel.font = [UIFont fontWithName:@"Helvetica" size:13.0];
     sectionFooterLabel.textColor = [UIColor grayColor];
     sectionFooterLabel.numberOfLines = 5;
         [sectionFooterView addSubview:sectionFooterLabel];
@@ -197,7 +198,7 @@
             break;
         case 3:
             sectionFooterLabel.text = @"Activer le mode cache empêche l'application de télécharger de nouvelles données.";
-            sectionFooterLabel.frame = CGRectMake(5, 0, tableView.frame.size.width - 5, 38);
+            sectionFooterLabel.frame = CGRectMake(5, 0, tableView.frame.size.width - 5, 40);
             sectionFooterView.frame = CGRectMake(0, 0, tableView.frame.size.width, 40);
             return sectionFooterView;
             break;
@@ -207,6 +208,8 @@
             break;
         case 5:
             sectionFooterLabel.text = [NSString stringWithFormat:@"Attention ! Toutes les données de l'application seront supprimées. \r\r\rVsMobile %@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]];
+            sectionFooterLabel.frame = CGRectMake(5, 0, tableView.frame.size.width - 5, 80);
+            sectionFooterView.frame = CGRectMake(0, 0, tableView.frame.size.width, 80);
             return sectionFooterView;
             break;
         default:

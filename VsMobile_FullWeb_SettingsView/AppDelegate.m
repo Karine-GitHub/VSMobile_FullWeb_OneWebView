@@ -111,6 +111,48 @@ NSString *APPLICATION_SUPPORT_PATH;
         self.refreshInterval = Nil;
         self.refreshDuration = Nil;
     }
+    
+    //
+    // TODO :Check general settings of the phone (roaming, avion)
+    //
+}
+
++ (NSNumber *) getSizeOf:(NSString *)path
+{
+    // TODO : check dossier images (à soustraire du poids des datas)
+    // NSFileSize works only with file
+    NSNumber *number;
+    unsigned long long ull = 0;
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSError *err;
+    NSArray *directories = [fm contentsOfDirectoryAtPath:path error:&err];
+    for (NSString *file in directories) {
+        NSLog(@"File : %@", file);
+        NSDictionary *attributes = [fm attributesOfItemAtPath:[NSString stringWithFormat:@"%@%@",path, file] error:&err];
+        ull += [attributes fileSize];
+        
+        // Check if subdirectories
+        if ([[attributes fileType] isEqualToString:NSFileTypeDirectory]) {
+            NSArray *subdir = [fm contentsOfDirectoryAtPath:[NSString stringWithFormat:@"%@/%@",path, file] error:&err];
+            for (NSString *subFiles in subdir) {
+                NSDictionary *attributes = [fm attributesOfItemAtPath:[NSString stringWithFormat:@"%@%@/%@",path, file, subFiles] error:&err];
+                ull += [attributes fileSize];
+                // Check if sub-subdirectories
+                
+                if ([[attributes fileType] isEqualToString:NSFileTypeDirectory]) {
+                    NSArray *subSubdir = [fm contentsOfDirectoryAtPath:[NSString stringWithFormat:@"%@%@/%@",path, file, subFiles] error:&err];
+                    for (NSString *subSubFiles in subSubdir) {
+                        NSDictionary *attributes = [fm attributesOfItemAtPath:[NSString stringWithFormat:@"%@%@/%@/%@",path, file, subFiles, subSubFiles] error:&err];
+                        ull += [attributes fileSize];
+                    }
+                }
+            }
+        }
+    }
+    // 1 ko = 1024 bytes
+    ull = ull / 1024;
+    number = [NSNumber numberWithUnsignedLongLong:ull];
+    return number;
 }
 
 - (void) saveFile:(NSString *)url fileName:(NSString *)fileName dirName:(NSString*)dirName
@@ -217,6 +259,7 @@ NSString *APPLICATION_SUPPORT_PATH;
 
 - (void) configureApp
 {
+    
 #pragma Create the Application Support Folder. Not accessible by users
     // NSHomeDirectory returns the application's sandbox directory. Application Support folder will contain all files that we need for the application
     APPLICATION_SUPPORT_PATH = [NSString stringWithFormat:@"%@/Library/Application Support/", NSHomeDirectory()];
@@ -306,8 +349,13 @@ NSString *APPLICATION_SUPPORT_PATH;
         [NSThread sleepForTimeInterval:2.0];
         exit(0);
     }
+    @finally {
+        NSNotification * notif = [NSNotification notificationWithName:@"ConfigureAppNotification" object:self];
+        [[NSNotificationCenter defaultCenter] postNotification:notif];
+    }
     NSLog(@"Dl by Network : %hhd", _isDownloadedByNetwork);
     NSLog(@"Dl by File : %hhd", _isDownloadedByFile);
+    NSLog(@"End of ConfigureApp Method");
 }
 
 + (NSMutableString *) addFiles:(NSArray *)dependencies
@@ -382,6 +430,7 @@ NSString *APPLICATION_SUPPORT_PATH;
         UINavigationController *navigationController = [splitViewController.viewControllers lastObject];
         splitViewController.delegate = (id)navigationController.topViewController;
     }
+    
     
     [self configureApp];
     

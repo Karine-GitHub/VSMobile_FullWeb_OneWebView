@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "AppDelegate.h"
 
 @interface SettingsView : UITableViewController <UIAlertViewDelegate>
 
@@ -31,8 +32,6 @@
 @property (weak, nonatomic) IBOutlet UIButton *downloadData;
 @property (weak, nonatomic) IBOutlet UIButton *deleteCache;
 
-
 @property (strong, nonatomic) NSString *errorMsg;
-
 
 @end

@@ -16,6 +16,5 @@
 @property (weak, nonatomic) IBOutlet UIButton *Settings;
 
 @property (nonatomic,retain) DetailsViewController *showDetails;
-@property (nonatomic, retain) SettingsView *showSettings;
 
 @end

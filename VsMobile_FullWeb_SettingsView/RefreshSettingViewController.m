@@ -30,13 +30,31 @@
     self.durationValues = [[NSArray alloc] initWithObjects:@"heure", @"jour", nil];
     
     self.intervalValues = [[NSMutableArray alloc] init];
-    for (int i=1; i < 31; ++i) {
-        [self.intervalValues addObject:[NSDecimalNumber numberWithInt:i]];
+    for (int i=1; i < 31; i++) {
+        NSNumber *number = [NSNumber numberWithInt:i];
+        [self.intervalValues addObject:[number stringValue]];
     }
     self.interval.dataSource = self;
     self.interval.delegate = self;
-    self.duration.dataSource = self;
-    self.duration.delegate = self;
+    
+    // Init picker values
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"durationChoice"]) {
+        // Use values selected by user
+        for (int i=0; i < self.intervalValues.count; i++) {
+            if ([[self.intervalValues objectAtIndex:i] isEqualToString:[[[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] stringValue]]) {
+                [self.interval selectRow:i inComponent:0 animated:YES];
+            }
+        }
+        for (int i=0; i < self.durationValues.count; i++) {
+            if ([[self.durationValues objectAtIndex:i] isEqualToString:[[[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"] stringValue]]) {
+                [self.interval selectRow:i inComponent:1 animated:YES];
+            }
+        }
+    // Default values : 1 day
+    } else {
+        [self.interval selectRow:0 inComponent:0 animated:YES];
+        [self.interval selectRow:1 inComponent:1 animated:YES];
+    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -47,38 +65,33 @@
 
 - (int) pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component
 {
-    NSLog(@"PickerView : %@", pickerView.restorationIdentifier);
-    if ([pickerView.restorationIdentifier isEqualToString:self.interval.restorationIdentifier]) {
-        return self.durationValues.count;
-    } else if ([pickerView.restorationIdentifier isEqualToString:self.duration.restorationIdentifier]) {
-        return self.durationValues.count;
+    if (component == 0) {
+        return self.intervalValues.count;
     } else {
-        return 0;
+        return self.durationValues.count;
     }
 }
 
 - (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component
 {
-    if ([pickerView.restorationIdentifier isEqualToString:self.interval.restorationIdentifier]) {
-        return self.intervalValues[row];
-    } else if ([pickerView.restorationIdentifier isEqualToString:self.duration.restorationIdentifier]) {
-        return self.durationValues[row];
+    if (component == 0) {
+        return [self.intervalValues objectAtIndex:row];
     } else {
-        return nil;
+        return [self.durationValues objectAtIndex:row];
     }
 }
 
 - (int) numberOfComponentsInPickerView:(UIPickerView *)pickerView
 {
-    return 1;
+    return 2;
 }
 
 - (void) pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component
 {
-    if ([pickerView isEqual:self.interval]) {
-        self.intervalChoice = self.intervalValues[row];
-    } else if ([pickerView isEqual:self.duration]) {
-        self.durationChoice = self.durationValues[row];
+    if (component == 0) {
+        self.intervalChoice = [self.intervalValues objectAtIndex:row];
+    } else {
+        self.durationChoice = [self.durationValues objectAtIndex:row];
     }
 }
 

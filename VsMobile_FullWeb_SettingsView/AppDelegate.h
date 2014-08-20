@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "Reachability.h"
 #import "MenuViewController.h"
+#import "SettingsView.h"
 
 // GLOBAL VARIABLES json files
 extern NSData *APPLICATION_FILE;
@@ -42,6 +43,7 @@ extern NSString *APPLICATION_SUPPORT_PATH;
 - (BOOL) testConnection;
 - (BOOL) testFastConnection;
 - (void) registerDefaultsFromSettingsBundle;
++ (NSNumber *) getSizeOf:(NSString *)path;
 + (NSMutableString *) addFiles:(NSArray *)dependencies;
 + (NSString *)createHTMLwithContent:(NSString *)htmlContent withAppDep:(NSArray *)appDep withPageDep:(NSArray *)pageDep;
 
