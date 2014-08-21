@@ -11,10 +11,10 @@
 
 @interface RefreshSettingViewController : UIViewController <UIPickerViewDataSource, UIPickerViewDelegate>
 
-@property (strong, nonatomic) IBOutlet UIPickerView *interval;
+@property (strong, nonatomic) IBOutlet UIPickerView *refresh;
 
 @property (strong, nonatomic) NSMutableArray *intervalValues;
-@property (strong, nonatomic) NSArray *durationValues;
+@property (strong, nonatomic) NSMutableArray *durationValues;
 
 @property (strong,nonatomic) NSString *intervalChoice;
 @property (strong,nonatomic) NSString *durationChoice;

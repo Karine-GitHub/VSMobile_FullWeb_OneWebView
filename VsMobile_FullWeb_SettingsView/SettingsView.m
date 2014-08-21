@@ -24,9 +24,14 @@
     return self;
 }
 
-// Set an observer on the method configureApp of AppDelegate Class : it is called in background during the loading of datas. Necessary for refreshing datas & images size.
+/* Add observer on : 
+    - the method configureApp of AppDelegate Class : it is called in background during the loading of datas. Necessary for refreshing datas & images size.
+    - when RefreshSettings view will disapear for saving user choice 
+*/
 - (void)awakeFromNib {
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureApp:) name:@"ConfigureAppNotification" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshApp:) name:@"RefreshAppNotification" object:nil];
+
 }
 
 - (void)dealloc {
@@ -34,12 +39,31 @@
 }
 
 - (void)configureApp:(NSNotification *)notification {
-    // Set Datas & Images Sizes
+    // Alert user that downloading is finished
     self.errorMsg = [NSString stringWithFormat:@"The downloading of files is done."];
     UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Downloading Successful" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
     [alertNoConnection show];
+    // Set Datas & Images Sizes
+
     self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
     self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
+}
+- (void)refreshApp:(NSNotification *)notification {
+    // Set RefreshChoice text when RefreshSettingsView disapear
+    NSLog(@"Interval = %@", [[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"]);
+    NSLog(@"Duration = %@", [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]);
+    
+    char plural = [[[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"] characterAtIndex:[[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"].length -1];
+    
+    if ([[NSUserDefaults standardUserDefaults] integerForKey:@"intervalChoice"] > 1 && plural != 's') {
+        NSString *pluriel = [NSString stringWithFormat:@"%@s", [[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"]];
+        self.refreshValue = [NSString stringWithFormat:@"%@ %@", [[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"], pluriel];
+    } else {
+        self.refreshValue = [NSString stringWithFormat:@"%@ %@", [[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"], [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]];
+    }
+    
+    NSLog(@"Value = %@", self.refreshValue);
+    self.refreshChoice.text = self.refreshValue;
 }
 
 - (void)viewDidLoad
@@ -49,8 +73,8 @@
     self.SettingsTable.delegate = self;
     
     // Set RefreshChoice text
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"durationChoice"]) {
-        self.refreshValue = [NSString stringWithFormat:@"%ld%@", (long)[[[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] integerValue], [[[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"] stringValue]];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]) {
+        self.refreshValue = [NSString stringWithFormat:@"%@ %@", [[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"], [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]];
     } else {
         self.refreshValue = @"1 jour";
     }

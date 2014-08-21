@@ -23,37 +23,57 @@
     return self;
 }
 
+- (void) viewWillDisappear:(BOOL)animated
+{
+    // Save user choice
+    NSLog(@"[viewWillDisappear] Interval = %@", self.intervalChoice);
+    NSLog(@"[viewWillDisappear] Duration = %@", self.durationChoice);
+    [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.intervalChoice forKey:@"intervalChoice"]];
+    [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.durationChoice forKey:@"durationChoice"]];
+    // Notify that  choice is done
+    NSNotification * notif = [NSNotification notificationWithName:@"RefreshAppNotification" object:self];
+    [[NSNotificationCenter defaultCenter] postNotification:notif];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    self.durationValues = [[NSArray alloc] initWithObjects:@"heure", @"jour", nil];
+    self.durationValues = [[NSMutableArray alloc] initWithObjects:@"heure", @"jour", nil];
     
     self.intervalValues = [[NSMutableArray alloc] init];
     for (int i=1; i < 31; i++) {
         NSNumber *number = [NSNumber numberWithInt:i];
         [self.intervalValues addObject:[number stringValue]];
     }
-    self.interval.dataSource = self;
-    self.interval.delegate = self;
+    self.refresh.dataSource = self;
+    self.refresh.delegate = self;
     
     // Init picker values
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"durationChoice"]) {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]) {
         // Use values selected by user
-        for (int i=0; i < self.intervalValues.count; i++) {
-            if ([[self.intervalValues objectAtIndex:i] isEqualToString:[[[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] stringValue]]) {
-                [self.interval selectRow:i inComponent:0 animated:YES];
-            }
+        self.intervalChoice = [[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"];
+        char plural = [[[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"] characterAtIndex:[[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"].length -1];
+        if (plural == 's') {
+            self.durationChoice = [[[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"s"]];
+        } else {
+            self.durationChoice = [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"];
         }
-        for (int i=0; i < self.durationValues.count; i++) {
-            if ([[self.durationValues objectAtIndex:i] isEqualToString:[[[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"] stringValue]]) {
-                [self.interval selectRow:i inComponent:1 animated:YES];
-            }
-        }
-    // Default values : 1 day
+        NSLog(@"[ViewDidLoad] Interval = %@", self.intervalChoice);
+        NSLog(@"[ViewDidLoad] Duration = %@", self.durationChoice);
+        // Use directly throw an exception NSRangeException => Must be passed by int variables
+        int iInterval = [self.intervalValues indexOfObject:self.intervalChoice];
+        int iDuration = [self.durationValues indexOfObject:self.durationChoice];
+        
+        [self.refresh selectRow:iInterval inComponent:0 animated:YES];
+        [self.refresh selectRow:iDuration inComponent:1 animated:YES];
+        
+        // Default values : 1 day
     } else {
-        [self.interval selectRow:0 inComponent:0 animated:YES];
-        [self.interval selectRow:1 inComponent:1 animated:YES];
+        [self.refresh selectRow:0 inComponent:0 animated:YES];
+        self.intervalChoice = [self.intervalValues objectAtIndex:0];
+        [self.refresh selectRow:1 inComponent:1 animated:YES];
+        self.durationChoice = [self.durationValues objectAtIndex:1];
     }
 }
 
@@ -74,6 +94,14 @@
 
 - (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component
 {
+    if ([self.intervalChoice intValue] > 1) {
+        [self.durationValues replaceObjectAtIndex:0 withObject:@"heures"];
+        [self.durationValues replaceObjectAtIndex:1 withObject:@"jours"];
+    } else {
+        [self.durationValues replaceObjectAtIndex:0 withObject:@"heure"];
+        [self.durationValues replaceObjectAtIndex:1 withObject:@"jour"];
+    }
+    //[pickerView reloadComponent:1];
     if (component == 0) {
         return [self.intervalValues objectAtIndex:row];
     } else {
@@ -88,25 +116,21 @@
 
 - (void) pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component
 {
+
     if (component == 0) {
         self.intervalChoice = [self.intervalValues objectAtIndex:row];
     } else {
         self.durationChoice = [self.durationValues objectAtIndex:row];
     }
-}
-
-
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
-    NSLog(@"Choice : %@%@", self.intervalChoice, self.durationChoice);
-    // Add choice in NSUserDefaults
-    if (self.intervalChoice && self.durationChoice) {
-        [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.intervalChoice forKey:@"intervalChoice"]];
-        [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.durationChoice forKey:@"durationChoice"]];
+    if ([[self.intervalValues objectAtIndex:row] integerValue] > 1) {
+        [self.durationValues replaceObjectAtIndex:0 withObject:@"heures"];
+        [self.durationValues replaceObjectAtIndex:1 withObject:@"jours"];
+    } else {
+        [self.durationValues replaceObjectAtIndex:0 withObject:@"heure"];
+        [self.durationValues replaceObjectAtIndex:1 withObject:@"jour"];
     }
+    [pickerView reloadComponent:1];
+
 }
 
 @end

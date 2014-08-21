@@ -336,7 +336,7 @@
                         <barButtonItem key="backBarButtonItem" title="Préférences" id="W2l-Bl-In8"/>
                     </navigationItem>
                     <connections>
-                        <outlet property="interval" destination="rG5-Er-b0u" id="sBw-pI-Osb"/>
+                        <outlet property="refresh" destination="rG5-Er-b0u" id="7Hw-R1-X1F"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gif-JX-gNT" userLabel="First Responder" sceneMemberID="firstResponder"/>

@@ -93,20 +93,20 @@ NSString *APPLICATION_SUPPORT_PATH;
 - (void) getSettings
 {
     // If key exists, get its value else set a default value
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"cache"]) {
-        self.cacheIsEnabled = [[[NSUserDefaults standardUserDefaults] objectForKey:@"cache"] boolValue];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"cache"]) {
+        self.cacheIsEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"cache"];
     } else {
         self.cacheIsEnabled = false;
     }
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"roaming"]) {
-        self.roamingIsEnabled = [[[NSUserDefaults standardUserDefaults] objectForKey:@"roaming"] boolValue];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"roaming"]) {
+        self.roamingIsEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"roaming"];
     } else {
         self.roamingIsEnabled = true;
     }
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"durationChoice"]) {
-        self.refreshInterval = (NSInteger *)[[[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] integerValue];
-        self.refreshDuration = [[[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"] stringValue];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]) {
+        self.refreshInterval = (NSInteger *)[[NSUserDefaults standardUserDefaults] integerForKey:@"intervalChoice"];
+        self.refreshDuration = [[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"];
     } else {
         self.refreshInterval = Nil;
         self.refreshDuration = Nil;
