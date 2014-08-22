@@ -71,17 +71,18 @@
     NSLog(@"[Menu_configureApp] Visible view controller = %@", self.navigationController.visibleViewController);
     if ([self.navigationController.visibleViewController isKindOfClass:[MenuViewController class]])
     {
-        self.img.hidden = YES;
-        self.Menu.hidden = NO;
-
         if (self.needReloadApp) {
-            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-            self.navigationItem.title = @"Menu";
+            // Sleep is necessary for displaying the alert
+            [NSThread sleepForTimeInterval:2.0];
             // Alert user that downloading is finished
             errorMsg = [NSString stringWithFormat:@"The new settings is now supported. The reconfiguration of the Application is done."];
             UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Reconfiguration Successful" message:errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
             [alertNoConnection show];
+            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+            self.navigationItem.title = @"Menu";
         }
+        self.img.hidden = YES;
+        self.Menu.hidden = NO;
         self.needReloadApp = NO;
     }
 }
