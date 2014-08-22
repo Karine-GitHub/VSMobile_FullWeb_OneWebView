@@ -27,12 +27,14 @@ extern NSString *APPLICATION_SUPPORT_PATH;
 // Settings
 @property BOOL cacheIsEnabled;
 @property BOOL roamingIsEnabled;
+@property BOOL roamingSituation;
 @property NSInteger *refreshInterval;
 @property NSString *refreshDuration;
 @property BOOL forceDownloading;
 @property BOOL reloadApp;
 
 // Used for checking if downloading is OK (differentiation for setting an appropriate error message)
+@property BOOL serverIsOk;
 @property BOOL isDownloadedByNetwork;
 @property BOOL isDownloadedByFile;
 

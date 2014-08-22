@@ -19,27 +19,34 @@ NSString *APPLICATION_SUPPORT_PATH;
 - (BOOL) testConnection
 {
     // Set the host
-    Reachability *checkConnection = [Reachability reachabilityWithHostName:@"10.1.40.105"];
+    Reachability *checkConnection = [Reachability reachabilityForInternetConnection];
     NetworkStatus networkStatus = [checkConnection currentReachabilityStatus];
     
     
     BOOL isConnected = false;
         switch (networkStatus) {
             case NotReachable:
-                //NSLog(@"Network Status : NotReachable");
+                NSLog(@"Network Status : NotReachable");
                 isConnected = false;
                 break;
             case ReachableViaWiFi:
-                //NSLog(@"Network Status : ReachableViaWiFi");
+                NSLog(@"Network Status : ReachableViaWiFi");
                 isConnected = true;
                 break;
             case ReachableViaWWAN:
-                //NSLog(@"Network Status : ReachableViaWWAN");
+                NSLog(@"Network Status : ReachableViaWWAN");
                 isConnected = [self testFastConnection];
                 break;
             default:
                 break;
         }
+    
+    /*checkConnection = [Reachability reachabilityWithHostName:@"testapp"];
+    networkStatus = [checkConnection currentReachabilityStatus];
+    if (networkStatus != 0) {
+        self.serverIsOk = true;
+    }
+    NSLog(@"Server responsive : %hhd", self.serverIsOk); */
     
     return isConnected;
 }
@@ -49,8 +56,7 @@ NSString *APPLICATION_SUPPORT_PATH;
     BOOL isFast = false;
     CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
     
-    if ([info.currentRadioAccessTechnology isEqualToString:CTRadioAccessTechnologyEdge] ||
-        [info.currentRadioAccessTechnology isEqualToString:CTRadioAccessTechnologyWCDMA]) {
+    if ([info.currentRadioAccessTechnology isEqualToString:CTRadioAccessTechnologyEdge]) {
         isFast = false;
     }
     else {
@@ -106,6 +112,35 @@ NSString *APPLICATION_SUPPORT_PATH;
     } else {
         self.roamingIsEnabled = true;
     }
+    // Check if user can be in Roaming mode
+    NSString *carrierPlist = @"/var/mobile/Library/Preferences/com.apple.carrier.plist";
+    NSString *operatorPlist = @"/var/mobile/Library/Preferences/com.apple.operator.plist";
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSError *err;
+    NSString *carrierPlistPath = [fm destinationOfSymbolicLinkAtPath:carrierPlist error:&err];
+    NSString *operatorPlistPath = [fm destinationOfSymbolicLinkAtPath:operatorPlist error:&err];
+    
+    int carrier = [carrierPlistPath rangeOfString:@"Carrier"].location;
+    int operator = [operatorPlistPath rangeOfString:@"Carrier"].location;
+    carrierPlistPath = [carrierPlistPath substringFromIndex:carrier];
+    operatorPlistPath = [operatorPlistPath substringFromIndex:operator];
+    
+    
+    NSLog(@"carrierPlistPath : %@", carrierPlistPath);
+    NSLog(@"operatorPlistPath : %@", operatorPlistPath);
+    // Carrier Bundles/iPhone/20810/carrier.plist
+    // Carrier Bundles/iPhone/27001/carrier.plist
+    NSString *test = @"Carrier Bundles/iPhone/20810/carrier.plist";
+    NSComparisonResult resulttest = [carrierPlistPath compare:test];
+    
+    NSComparisonResult result = [carrierPlistPath compare:operatorPlistPath];
+    
+    if (result == NSOrderedSame) {
+        self.roamingSituation = NO;
+    } else {
+         self.roamingSituation = YES;
+    }
+    
     
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]) {
         self.refreshInterval = (NSInteger *)[[NSUserDefaults standardUserDefaults] integerForKey:@"intervalChoice"];
@@ -114,6 +149,7 @@ NSString *APPLICATION_SUPPORT_PATH;
         self.refreshInterval = Nil;
         self.refreshDuration = Nil;
     }
+    
     
     //
     // TODO :Check general settings of the phone (roaming, avion)
@@ -208,21 +244,42 @@ NSString *APPLICATION_SUPPORT_PATH;
                     }
                 }
             }
-            
+            // Download file if necessary
             NSURL *location = [NSURL URLWithString:url];
             if (![fileManager fileExistsAtPath:path] || self.forceDownloading) {
                 if (!self.cacheIsEnabled) {
-                    success = [self testConnection];
-                    if (success) {
-                        //NSLog(@"[SaveFile] Connection is OK");
-                        success =[[NSData dataWithContentsOfURL:location] writeToFile:path options:NSDataWritingAtomic error:&error];
-                        if (!success) {
-                            NSLog(@"An error occured during the Saving of the file %@ : %@", fileName, error);
-                            _isDownloadedByNetwork = false;
-                        } else {
-                            _isDownloadedByNetwork = true;
-                        }
+                    // Check if user is currently in Roaming Case
+                    if (self.roamingSituation) {
                         
+                        // Check if user enable Roaming for our app
+                        if (self.roamingIsEnabled) {
+                            
+                            success = [self testConnection];
+                            if (success) {
+                                //NSLog(@"[SaveFile] Connection is OK");
+                                success =[[NSData dataWithContentsOfURL:location] writeToFile:path options:NSDataWritingAtomic error:&error];
+                                if (!success) {
+                                    NSLog(@"An error occured during the Saving of the file %@ : %@", fileName, error);
+                                    _isDownloadedByNetwork = false;
+                                } else {
+                                    _isDownloadedByNetwork = true;
+                                }
+                            }
+                        }
+                        // User is in Roaming case but disable it => Do not download
+                    } else {
+                        // User is not in Roaming case => Download
+                        success = [self testConnection];
+                        if (success) {
+                            //NSLog(@"[SaveFile] Connection is OK");
+                            success =[[NSData dataWithContentsOfURL:location] writeToFile:path options:NSDataWritingAtomic error:&error];
+                            if (!success) {
+                                NSLog(@"An error occured during the Saving of the file %@ : %@", fileName, error);
+                                _isDownloadedByNetwork = false;
+                            } else {
+                                _isDownloadedByNetwork = true;
+                            }
+                        }
                     }
                 }
             } else {
@@ -322,11 +379,34 @@ NSString *APPLICATION_SUPPORT_PATH;
             NSLog(@"File does not exist or self.forceDownloading is true");
             // Check Connection if cache is not enabled
             if (!self.cacheIsEnabled) {
-                success = [self testConnection];
-                if (success) {
-                    NSLog(@"Connection is OK");
-                    APPLICATION_FILE = [NSData dataWithContentsOfURL:url];
-                    [[NSData dataWithContentsOfURL:url] writeToFile:path options:NSDataWritingAtomic error:&error];
+                
+                // Check if user is currently in Roaming Case
+                if (self.roamingSituation) {
+                    
+                    // Check if user enable Roaming for our app
+                    if (self.roamingIsEnabled) {
+                        
+                        // User is in Roaming case & enable it => Download
+                        success = [self testConnection];
+                        if (success) {
+                            APPLICATION_FILE = [NSData dataWithContentsOfURL:url];
+                            success = [[NSData dataWithContentsOfURL:url] writeToFile:path options:NSDataWritingAtomic error:&error];
+                            if (success) {
+                                _isDownloadedByNetwork = true;
+                            }
+                        }
+                    }
+                    // User is in Roaming case but disable it => Alert & Quit
+                } else {
+                    // User is not in Roaming case => Download
+                    success = [self testConnection];
+                    if (success) {
+                        APPLICATION_FILE = [NSData dataWithContentsOfURL:url];
+                        success = [[NSData dataWithContentsOfURL:url] writeToFile:path options:NSDataWritingAtomic error:&error];
+                        if (success) {
+                            _isDownloadedByNetwork = true;
+                        }
+                    }
                 }
             }
         }
@@ -433,7 +513,7 @@ NSString *APPLICATION_SUPPORT_PATH;
         UINavigationController *navigationController = [splitViewController.viewControllers lastObject];
         splitViewController.delegate = (id)navigationController.topViewController;
     }
-
+    
     [self configureApp];
     
     return YES;

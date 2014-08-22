@@ -71,8 +71,9 @@
     NSLog(@"[Menu_configureApp] Visible view controller = %@", self.navigationController.visibleViewController);
     if ([self.navigationController.visibleViewController isKindOfClass:[MenuViewController class]])
     {
+        
         if (self.needReloadApp) {
-            // Sleep is necessary for displaying the alert
+            // Sleep is necessary for showing Configuration screen & the alert msg
             [NSThread sleepForTimeInterval:2.0];
             // Alert user that downloading is finished
             errorMsg = [NSString stringWithFormat:@"The new settings is now supported. The reconfiguration of the Application is done."];
@@ -81,9 +82,9 @@
             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
             self.navigationItem.title = @"Menu";
         }
+        self.needReloadApp = NO;
         self.img.hidden = YES;
         self.Menu.hidden = NO;
-        self.needReloadApp = NO;
     }
 }
 
@@ -98,6 +99,8 @@
     [super viewDidLoad];
     
 	// Do any additional setup after loading the view, typically from a nib.
+    appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+
     self.Menu.delegate = self;
     self.navigationItem.hidesBackButton = YES;
     self.navigationItem.title = nil;
@@ -122,8 +125,6 @@
 
 - (void) initApp
 {
-    appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    
     // Get Application json file
     @try {
         if (!self.Menu.hidden) {
@@ -147,6 +148,11 @@
                 if (appDel.cacheIsEnabled) {
                     alertNoConnection.message = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Do you want to disable it ?";
                     [alertNoConnection addButtonWithTitle:@"Settings"];
+                } else if (appDel.roamingSituation && !appDel.roamingIsEnabled) {
+                        alertNoConnection.message = @"Impossible to download content. You are currently in Roaming case and the roaming mode is disabled : it blocks the downloading. Do you want to enable it ?";
+                    [alertNoConnection addButtonWithTitle:@"Settings"];
+                /*} else if (!appDel.serverIsOk) {
+                    alertNoConnection.message = @"Impossible to download content on the server because it is not reachable. The application will shut down. Sorry for the inconvenience. Please try later.";*/
                 } else if (!appDel.isDownloadedByNetwork) {
                     alertNoConnection.message = @"Impossible to download content on the server. The network connection is too low or off. The application will shut down. Please try later.";
                 } else if (!appDel.isDownloadedByFile) {
@@ -263,7 +269,11 @@
 #pragma mark - Alert View
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if (self.needReloadApp) {
+    BOOL downloadFailure = NO;
+    if (!appDel.isDownloadedByFile && !appDel.isDownloadedByNetwork) {
+        downloadFailure = YES;
+    }
+    if (downloadFailure) {
         if ([alertView cancelButtonIndex] == buttonIndex) {
             // Fermer l'application
             //Home button
@@ -272,12 +282,12 @@
             // Wait while app is going background
             [NSThread sleepForTimeInterval:2.0];
             exit(0);
-        } else {
-            // Go to settings
-            SettingsView *showSettings = [[SettingsView alloc] init];
-            showSettings = [self.storyboard instantiateViewControllerWithIdentifier:@"settingsView"];
-            [self.navigationController pushViewController:showSettings animated:YES];
         }
+    } else if (!appDel.cacheIsEnabled || !appDel.roamingIsEnabled) {
+        // Go to settings
+        SettingsView *showSettings = [[SettingsView alloc] init];
+        showSettings = [self.storyboard instantiateViewControllerWithIdentifier:@"settingsView"];
+        [self.navigationController pushViewController:showSettings animated:YES];
     }
 }
 

@@ -13,7 +13,9 @@
 
 @end
 
-@implementation SettingsView
+@implementation SettingsView {
+    AppDelegate *appDel;
+}
 
 - (id)initWithStyle:(UITableViewStyle)style
 {
@@ -31,6 +33,8 @@
 - (void)awakeFromNib {
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureApp:) name:@"ConfigureAppNotification" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshApp:) name:@"RefreshAppNotification" object:nil];
+    appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+
 }
 
 - (void)dealloc {
@@ -76,6 +80,11 @@
 
 - (void)viewWillDisappear:(BOOL)animated
 {
+    // Register settings
+    NSNumber *cache = [NSNumber numberWithBool:appDel.cacheIsEnabled];
+    NSNumber *roaming = [NSNumber numberWithBool:appDel.roamingIsEnabled];
+    [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:cache forKey:@"cache"]];
+    [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:roaming forKey:@"roaming"]];
     // Notify that settings was modified
     if (self.reconfigNecessary) {
         NSNotification * notif = [NSNotification notificationWithName:@"SettingsIsFinishedNotification" object:self];
@@ -88,6 +97,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+
+    self.reconfigNecessary = NO;
 
     self.SettingsTable.delegate = self;
     
@@ -103,11 +114,24 @@
     self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
     self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
     
-    // Set Cache & Roaming values
-    self.enableCache = [NSNumber numberWithBool:self.cacheMode.isOn];
-    self.enableRoaming = [NSNumber numberWithBool:self.roamingMode.isOn];
-    
     self.downloadData.titleLabel.font = [UIFont fontWithName:@"Helvetica Neue" size:17.0];
+    
+    // Set Mode Cache
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"cache"]) {
+        [self.cacheMode setOn:[[NSUserDefaults standardUserDefaults] boolForKey:@"cache"] animated:YES];
+    } else {
+        [self.cacheMode setOn:NO];
+    }
+    [appDel setCacheIsEnabled:self.cacheMode.isOn];
+    
+    // Set Roaming Mode
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"roaming"]) {
+        [self.roamingMode setOn:[[NSUserDefaults standardUserDefaults] boolForKey:@"roaming"] animated:YES];
+    } else {
+        [self.roamingMode setOn:YES];
+    }
+    [appDel setRoamingIsEnabled:self.roamingMode.isOn];
+
 }
 
 - (void)didReceiveMemoryWarning
@@ -117,12 +141,12 @@
 }
 
 - (IBAction)cacheModeValueChanged:(id)sender {
-    self.enableCache = [NSNumber numberWithBool:self.cacheMode.isOn];
+    [appDel setCacheIsEnabled:self.cacheMode.isOn];
     self.reconfigNecessary = YES;
 }
 
 - (IBAction)roamingValueChanged:(id)sender {
-    self.enableRoaming = [NSNumber numberWithBool:self.roamingMode.isOn];
+    [appDel setRoamingIsEnabled:self.roamingMode.isOn];
     self.reconfigNecessary = YES;
     // TODO : Check iPhone setup for roaming
 }
@@ -130,19 +154,14 @@
 - (IBAction)dataLoadingClick:(id)sender {
     
     // Download all
-    AppDelegate *ad = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     @try {
-        [ad setForceDownloading:YES];
-        NSLog(@"Avant runInBackground");
-
-        [ad performSelectorInBackground:@selector(configureApp) withObject:ad];
-        NSLog(@"Après runInBackground");
-
+        [appDel setForceDownloading:YES];
+        [appDel performSelectorInBackground:@selector(configureApp) withObject:appDel];
     }
     @catch (NSException *exception) {
-        if (ad.cacheIsEnabled) {
+        if (appDel.cacheIsEnabled) {
             self.errorMsg = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Please turn it off.";
-        } else if (!ad.isDownloadedByNetwork) {
+        } else if (!appDel.isDownloadedByNetwork) {
             self.errorMsg = @"Impossible to download content on the server. The network connection is too low or off. Please try later.";
         }
         UIAlertView *alertLoadingFail = [[UIAlertView alloc] initWithTitle:@"Downloading fails" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
@@ -191,18 +210,6 @@
         // Refresh dataSize & imagesSize
         self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
         self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
-    }
-}
-
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
-    // Add choice to NSUserDefaults
-    if ([segue.identifier isEqualToString:@"settings"]) {
-        [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.enableCache forKey:@"cache"]];
-        [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.enableRoaming forKey:@"roaming"]];
     }
 }
 

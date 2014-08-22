@@ -18,10 +18,8 @@
 @property (strong,nonatomic) NSString *refreshValue;
 
 @property (weak, nonatomic) IBOutlet UISwitch *cacheMode;
-@property (strong, nonatomic) NSNumber *enableCache;
 
 @property (weak, nonatomic) IBOutlet UISwitch *roamingMode;
-@property (strong, nonatomic) NSNumber *enableRoaming;
 
 @property (weak, nonatomic) IBOutlet UILabel *dataSize;
 @property (strong,nonatomic) NSString *dataSizeValue;
