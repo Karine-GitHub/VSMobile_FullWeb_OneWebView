@@ -38,7 +38,7 @@
                                 <dataDetectorType key="dataDetectorTypes" phoneNumber="YES" link="YES" address="YES" calendarEvent="YES"/>
                             </webView>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="p6R-64-Ew0">
-                                <rect key="frame" x="20" y="433" width="49" height="28"/>
+                                <rect key="frame" x="0.0" y="433" width="320" height="28"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" image="20-gear2.png">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -47,6 +47,10 @@
                                     <segue destination="AGk-MO-ZaF" kind="push" identifier="settings" id="d3R-QY-osi"/>
                                 </connections>
                             </button>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DyL-nI-ylO">
+                                <rect key="frame" x="0.0" y="0.0" width="326" height="425"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
@@ -57,6 +61,7 @@
                     <connections>
                         <outlet property="Menu" destination="UND-tu-cLY" id="E2E-gc-hQ4"/>
                         <outlet property="Settings" destination="p6R-64-Ew0" id="YsD-5S-k0s"/>
+                        <outlet property="img" destination="DyL-nI-ylO" id="cSd-1z-VZY"/>
                         <segue destination="eKa-zo-ohd" kind="push" identifier="changeView" id="JDg-Pw-U7o"/>
                     </connections>
                 </viewController>
@@ -271,7 +276,7 @@
                                                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                                     </state>
                                                     <connections>
-                                                        <action selector="deleteCacheClick:" destination="AGk-MO-ZaF" eventType="touchUpInside" id="juN-Ll-hwd"/>
+                                                        <action selector="deleteCacheClick:" destination="AGk-MO-ZaF" eventType="touchUpInside" id="or1-Aj-Aep"/>
                                                     </connections>
                                                 </button>
                                             </subviews>
@@ -295,7 +300,7 @@
                         <outlet property="SettingsTable" destination="T7o-uH-FD1" id="uw7-FI-4Pi"/>
                         <outlet property="cacheMode" destination="zkH-eh-1CE" id="4cW-ay-nAX"/>
                         <outlet property="dataSize" destination="qJU-cG-cty" id="Wy1-dL-74j"/>
-                        <outlet property="deleteCache" destination="wWh-7f-Gjs" id="5Is-7E-5R3"/>
+                        <outlet property="deleteCache" destination="wWh-7f-Gjs" id="xqY-eP-69f"/>
                         <outlet property="downloadData" destination="QgD-nd-5Dp" id="yVy-tb-hSM"/>
                         <outlet property="imagesSize" destination="8SP-kd-FQy" id="QTN-7o-eTK"/>
                         <outlet property="refreshChoice" destination="x8I-93-gaB" id="dwJ-0b-mdr"/>

@@ -31,7 +31,6 @@
 - (void)awakeFromNib {
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureApp:) name:@"ConfigureAppNotification" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshApp:) name:@"RefreshAppNotification" object:nil];
-
 }
 
 - (void)dealloc {
@@ -39,14 +38,20 @@
 }
 
 - (void)configureApp:(NSNotification *)notification {
-    // Alert user that downloading is finished
-    self.errorMsg = [NSString stringWithFormat:@"The downloading of files is done."];
-    UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Downloading Successful" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-    [alertNoConnection show];
-    // Set Datas & Images Sizes
-
-    self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
-    self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
+    
+    // Check if settings view is visible
+    NSLog(@"[SettingsView_ConfigureApp] Visible view controller = %@", self.navigationController.visibleViewController);
+    if ([self.navigationController.visibleViewController isKindOfClass:[SettingsView class]])
+    {
+        // Alert user that downloading is finished
+        self.errorMsg = [NSString stringWithFormat:@"The downloading of files is done."];
+        UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Downloading Successful" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [alertNoConnection show];
+        // Set Datas & Images Sizes
+        
+        self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
+        self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
+    }
 }
 - (void)refreshApp:(NSNotification *)notification {
     // Set RefreshChoice text when RefreshSettingsView disapear
@@ -63,7 +68,21 @@
     }
     
     NSLog(@"Value = %@", self.refreshValue);
+    if (![self.refreshChoice.text isEqualToString:self.refreshValue]) {
+        self.reconfigNecessary = YES;
+    }
     self.refreshChoice.text = self.refreshValue;
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    // Notify that settings was modified
+    if (self.reconfigNecessary) {
+        NSNotification * notif = [NSNotification notificationWithName:@"SettingsIsFinishedNotification" object:self];
+        [[NSNotificationCenter defaultCenter] postNotification:notif];
+    }
+
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)viewDidLoad
@@ -98,12 +117,13 @@
 }
 
 - (IBAction)cacheModeValueChanged:(id)sender {
-    self.enableCache = [self.enableCache initWithBool:self.cacheMode.isOn];
+    self.enableCache = [NSNumber numberWithBool:self.cacheMode.isOn];
+    self.reconfigNecessary = YES;
 }
 
 - (IBAction)roamingValueChanged:(id)sender {
-    self.enableRoaming = [self.enableRoaming initWithBool:self.roamingMode.isOn];
-    
+    self.enableRoaming = [NSNumber numberWithBool:self.roamingMode.isOn];
+    self.reconfigNecessary = YES;
     // TODO : Check iPhone setup for roaming
 }
 
@@ -120,14 +140,16 @@
 
     }
     @catch (NSException *exception) {
-        NSString *errorMsg;
         if (ad.cacheIsEnabled) {
-            errorMsg = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Please turn it off.";
+            self.errorMsg = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Please turn it off.";
         } else if (!ad.isDownloadedByNetwork) {
-            errorMsg = @"Impossible to download content on the server. The network connection is too low or off. Please try later.";
+            self.errorMsg = @"Impossible to download content on the server. The network connection is too low or off. Please try later.";
         }
-        UIAlertView *alertLoadingFail = [[UIAlertView alloc] initWithTitle:@"Downloading fails" message:errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        UIAlertView *alertLoadingFail = [[UIAlertView alloc] initWithTitle:@"Downloading fails" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alertLoadingFail show];
+    }
+    @finally {
+        self.reconfigNecessary = YES;
     }
 }
 
@@ -165,6 +187,7 @@
         [alertNoConnection show];
     }
     @finally {
+        self.reconfigNecessary = YES;
         // Refresh dataSize & imagesSize
         self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
         self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
@@ -241,19 +264,5 @@
             break;
     }
 }
-
-/*#pragma mark - Alert View
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if ([alertView cancelButtonIndex] == buttonIndex) {
-        // Fermer l'application
-        //Home button
-        UIApplication *app = [UIApplication sharedApplication];
-        [app performSelector:@selector(suspend)];
-        // Wait while app is going background
-        [NSThread sleepForTimeInterval:2.0];
-        exit(0);
-    }
-}*/
 
 @end

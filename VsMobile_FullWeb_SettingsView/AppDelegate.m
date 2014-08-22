@@ -19,19 +19,22 @@ NSString *APPLICATION_SUPPORT_PATH;
 - (BOOL) testConnection
 {
     // Set the host
-    Reachability *checkConnection = [Reachability reachabilityWithHostName:@"10.1.40.37"];
+    Reachability *checkConnection = [Reachability reachabilityWithHostName:@"10.1.40.105"];
     NetworkStatus networkStatus = [checkConnection currentReachabilityStatus];
-    NSLog(@"Network Status : %d", networkStatus);
+    
     
     BOOL isConnected = false;
         switch (networkStatus) {
             case NotReachable:
+                //NSLog(@"Network Status : NotReachable");
                 isConnected = false;
                 break;
             case ReachableViaWiFi:
+                //NSLog(@"Network Status : ReachableViaWiFi");
                 isConnected = true;
                 break;
             case ReachableViaWWAN:
+                //NSLog(@"Network Status : ReachableViaWWAN");
                 isConnected = [self testFastConnection];
                 break;
             default:
@@ -53,7 +56,7 @@ NSString *APPLICATION_SUPPORT_PATH;
     else {
         isFast = true;
     }
-    
+    NSLog(@"Test fast connexion : %hhd", isFast);
     return isFast;
 }
 
@@ -127,7 +130,7 @@ NSString *APPLICATION_SUPPORT_PATH;
     NSError *err;
     NSArray *directories = [fm contentsOfDirectoryAtPath:path error:&err];
     for (NSString *file in directories) {
-        NSLog(@"File : %@", file);
+        //NSLog(@"File : %@", file);
         NSDictionary *attributes = [fm attributesOfItemAtPath:[NSString stringWithFormat:@"%@%@",path, file] error:&err];
         ull += [attributes fileSize];
         
@@ -208,10 +211,22 @@ NSString *APPLICATION_SUPPORT_PATH;
             
             NSURL *location = [NSURL URLWithString:url];
             if (![fileManager fileExistsAtPath:path] || self.forceDownloading) {
-                success =[[NSData dataWithContentsOfURL:location] writeToFile:path options:NSDataWritingAtomic error:&error];
-                if (!success) {
-                    NSLog(@"An error occured during the Saving of the file %@ : %@", fileName, error);
+                if (!self.cacheIsEnabled) {
+                    success = [self testConnection];
+                    if (success) {
+                        //NSLog(@"[SaveFile] Connection is OK");
+                        success =[[NSData dataWithContentsOfURL:location] writeToFile:path options:NSDataWritingAtomic error:&error];
+                        if (!success) {
+                            NSLog(@"An error occured during the Saving of the file %@ : %@", fileName, error);
+                            _isDownloadedByNetwork = false;
+                        } else {
+                            _isDownloadedByNetwork = true;
+                        }
+                        
+                    }
                 }
+            } else {
+                _isDownloadedByFile = true;
             }
         }
     }
@@ -311,25 +326,13 @@ NSString *APPLICATION_SUPPORT_PATH;
                 if (success) {
                     NSLog(@"Connection is OK");
                     APPLICATION_FILE = [NSData dataWithContentsOfURL:url];
-                    success =[[NSData dataWithContentsOfURL:url] writeToFile:path options:NSDataWritingAtomic error:&error];
-                    if (success) {
-                        _isDownloadedByNetwork = true;
-                    }
-                    else {
-                        NSLog(@"An error occured during the Saving of Application File : %@", error);
-                    }
+                    [[NSData dataWithContentsOfURL:url] writeToFile:path options:NSDataWritingAtomic error:&error];
                 }
             }
         }
         else {
             NSLog(@"File exists");
             APPLICATION_FILE = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:&error];
-            if (APPLICATION_FILE != Nil) {
-                _isDownloadedByFile = true;
-            }
-            else {
-                NSLog(@"An error occured during the Loading of Application File : %@", error);
-            }
         }
         if (APPLICATION_FILE != Nil) {
             self.application = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:APPLICATION_FILE options:NSJSONReadingMutableLeaves error:&error];
@@ -430,8 +433,7 @@ NSString *APPLICATION_SUPPORT_PATH;
         UINavigationController *navigationController = [splitViewController.viewControllers lastObject];
         splitViewController.delegate = (id)navigationController.topViewController;
     }
-    
-    
+
     [self configureApp];
     
     return YES;

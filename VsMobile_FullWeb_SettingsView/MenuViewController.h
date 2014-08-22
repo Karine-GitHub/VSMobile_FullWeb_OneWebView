@@ -14,7 +14,10 @@
 
 @property (weak, nonatomic) IBOutlet UIWebView *Menu;
 @property (weak, nonatomic) IBOutlet UIButton *Settings;
+@property (strong, nonatomic) IBOutlet UIImageView *img;
 
 @property (nonatomic,retain) DetailsViewController *showDetails;
+
+@property BOOL needReloadApp;
 
 @end

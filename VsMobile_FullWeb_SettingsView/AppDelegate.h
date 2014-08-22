@@ -30,6 +30,7 @@ extern NSString *APPLICATION_SUPPORT_PATH;
 @property NSInteger *refreshInterval;
 @property NSString *refreshDuration;
 @property BOOL forceDownloading;
+@property BOOL reloadApp;
 
 // Used for checking if downloading is OK (differentiation for setting an appropriate error message)
 @property BOOL isDownloadedByNetwork;

@@ -33,5 +33,6 @@
 @property (weak, nonatomic) IBOutlet UIButton *deleteCache;
 
 @property (strong, nonatomic) NSString *errorMsg;
+@property BOOL reconfigNecessary;
 
 @end
