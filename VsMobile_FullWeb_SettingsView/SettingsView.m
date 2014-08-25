@@ -30,15 +30,39 @@
     - the method configureApp of AppDelegate Class : it is called in background during the loading of datas. Necessary for refreshing datas & images size.
     - when RefreshSettings view will disapear for saving user choice 
 */
-- (void)awakeFromNib {
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureApp:) name:@"ConfigureAppNotification" object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshApp:) name:@"RefreshAppNotification" object:nil];
+- (void) viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:YES];
     appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
 
+    // Be sure observer is not added twice
+    //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"ConfigureAppNotification" object:nil];
+    //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"RefreshAppNotification" object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureApp:) name:@"ConfigureAppNotification" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshApp:) name:@"RefreshAppNotification" object:nil];
 }
 
-- (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+- (void) viewWillDisappear:(BOOL)animated
+{
+    NSLog(@"Passage dans viewDidDisappear SETTINGS");
+    [super viewWillDisappear:YES];
+    // Register settings
+    NSNumber *cache = [NSNumber numberWithBool:appDel.cacheIsEnabled];
+    NSNumber *roaming = [NSNumber numberWithBool:appDel.roamingIsEnabled];
+    [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:cache forKey:@"cache"]];
+    [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:roaming forKey:@"roaming"]];
+    // Remove observers
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"ConfigureAppNotification" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"RefreshAppNotification" object:nil];
+    // Notify that settings was modified
+    if (self.reconfigNecessary) {
+        NSNotification * notif = [NSNotification notificationWithName:@"SettingsIsFinishedNotification" object:self];
+
+        // Change rien
+        //[[NSNotificationCenter defaultCenter] performSelectorOnMainThread:@selector(postNotification:) withObject:notif waitUntilDone:YES];
+        [[NSNotificationCenter defaultCenter] postNotification:notif];
+    }
 }
 
 - (void)configureApp:(NSNotification *)notification {
@@ -47,6 +71,7 @@
     NSLog(@"[SettingsView_ConfigureApp] Visible view controller = %@", self.navigationController.visibleViewController);
     if ([self.navigationController.visibleViewController isKindOfClass:[SettingsView class]])
     {
+        [NSThread sleepForTimeInterval:2.0];
         // Alert user that downloading is finished
         self.errorMsg = [NSString stringWithFormat:@"The downloading of files is done."];
         UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Downloading Successful" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
@@ -55,6 +80,7 @@
         
         self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
         self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     }
 }
 - (void)refreshApp:(NSNotification *)notification {
@@ -76,22 +102,6 @@
         self.reconfigNecessary = YES;
     }
     self.refreshChoice.text = self.refreshValue;
-}
-
-- (void)viewWillDisappear:(BOOL)animated
-{
-    // Register settings
-    NSNumber *cache = [NSNumber numberWithBool:appDel.cacheIsEnabled];
-    NSNumber *roaming = [NSNumber numberWithBool:appDel.roamingIsEnabled];
-    [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:cache forKey:@"cache"]];
-    [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:roaming forKey:@"roaming"]];
-    // Notify that settings was modified
-    if (self.reconfigNecessary) {
-        NSNotification * notif = [NSNotification notificationWithName:@"SettingsIsFinishedNotification" object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:notif];
-    }
-
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)viewDidLoad
@@ -152,7 +162,10 @@
 }
 
 - (IBAction)dataLoadingClick:(id)sender {
-    
+    NSLog(@"Click Loading");
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    self.reconfigNecessary = NO;
+
     // Download all
     @try {
         [appDel setForceDownloading:YES];
@@ -167,12 +180,10 @@
         UIAlertView *alertLoadingFail = [[UIAlertView alloc] initWithTitle:@"Downloading fails" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alertLoadingFail show];
     }
-    @finally {
-        self.reconfigNecessary = YES;
-    }
 }
 
 - (IBAction)deleteCacheClick:(id)sender {
+    NSLog(@"Click Delete");
 
     @try {
         NSFileManager *fm = [NSFileManager defaultManager];

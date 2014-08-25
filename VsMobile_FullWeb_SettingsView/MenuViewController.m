@@ -22,27 +22,95 @@
     NSMutableArray *pageDependencies;
 }
 
-- (void)awakeFromNib
-{
-    [super awakeFromNib];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsDone:) name:@"SettingsIsFinishedNotification" object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureAppDone:) name:@"ConfigureAppNotification" object:nil];
+- (void)awakeFromNib {
+
 }
 
-- (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+// Pas appelé lors du retour depuis les settings
+- (void) viewWillAppear:(BOOL)animated
+{
+    NSLog(@"Passage dans viewWillAppear MENU");
+
+    [super viewWillAppear:YES];
+    //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"SettingsIsFinishedNotification" object:nil];
+    //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"ConfigureAppNotification" object:nil];
+    //[[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsDone:) name:@"SettingsIsFinishedNotification" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureAppDone:) name:@"ConfigureAppNotification" object:nil];
+    
+    
+    // TEST notif interne : marche pas. Rentre pas dans la méthode
+    //[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureAppDone:) name:@"TestNotificationSelf" object:nil];
+
+}
+
+
+- (void) viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:YES];
+    NSLog(@"Passage dans viewDidDisappear MENU");
+    // Si notif enlevées ici, jamais rappelées lors du retour des settings
+    //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"SettingsIsFinishedNotification" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"ConfigureAppNotification" object:nil];
 }
 
 - (void)settingsDone:(NSNotification *)notification {
     NSLog(@"Passage dans settingsDone => notif OK");
-    self.needReloadApp = YES;
-    self.navigationItem.title = @"Reconfiguration in progress";
-    [self viewDidLoad];
+    //@synchronized(self) {
+        //[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureAppDone:) name:@"ConfigureAppNotification" object:nil];
+        //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"SettingsIsFinishedNotification" object:nil];
+        
+        self.needReloadApp = YES;
+        self.navigationItem.title = @"Reconfiguration in progress";
+        [self viewDidLoad];
+    
+    /* Test Notif Interne. Marche pas. Rentre pas dans la méthode.
+    NSNotification * notif = [NSNotification notificationWithName:@"TestNotificationSelf" object:self];
+    
+    //[[NSNotificationCenter defaultCenter] performSelectorOnMainThread:@selector(postNotification:) withObject:notif waitUntilDone:YES];
+    [[NSNotificationCenter defaultCenter] postNotification:notif]; */
+
+    //}
+}
+
+- (void)configureAppDone:(NSNotification *)notification {
+    
+    // Check if settings view is visible
+    NSLog(@"[Menu_configureApp] Visible view controller = %@", self.navigationController.visibleViewController);
+    //@synchronized(self) {
+    if (appDel.reloadApp || appDel.forceDownloading) {
+        //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"ConfigureAppNotification" object:nil];
+        if ([self.navigationController.visibleViewController isKindOfClass:[MenuViewController class]])
+        {
+            @try {
+                if (self.needReloadApp) {
+                    // Sleep is necessary for showing Configuration screen & the alert msg
+                    [NSThread sleepForTimeInterval:2.0];
+                    // Alert user that downloading is finished
+                    errorMsg = [NSString stringWithFormat:@"The new settings is now supported. The reconfiguration of the Application is done."];
+                    UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Reconfiguration Successful" message:errorMsg delegate:self cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
+                    [alertNoConnection show];
+                    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+                    self.navigationItem.title = @"Menu";
+                }
+            } @catch (NSException *exception) {
+                errorMsg = @"Reconfig fails";
+                UIAlertView *alertLoadingFail = [[UIAlertView alloc] initWithTitle:@"Reconfiguration fails" message:errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                [alertLoadingFail show];
+            } @finally {
+                self.needReloadApp = NO;
+                self.img.hidden = YES;
+                self.Menu.hidden = NO;
+            }
+        }
+    }
+    //}
 }
 
 - (void)reloadApp
 {
-     // Check if menu view is visible
+    // Check if menu view is visible
     NSLog(@"[MenuView_reloadApp] Visible view controller = %@", self.navigationController.visibleViewController);
     if ([self.navigationController.visibleViewController isKindOfClass:[MenuViewController class]])
     {
@@ -65,29 +133,6 @@
     }
 }
 
-- (void)configureAppDone:(NSNotification *)notification {
-    
-    // Check if settings view is visible
-    NSLog(@"[Menu_configureApp] Visible view controller = %@", self.navigationController.visibleViewController);
-    if ([self.navigationController.visibleViewController isKindOfClass:[MenuViewController class]])
-    {
-        
-        if (self.needReloadApp) {
-            // Sleep is necessary for showing Configuration screen & the alert msg
-            [NSThread sleepForTimeInterval:2.0];
-            // Alert user that downloading is finished
-            errorMsg = [NSString stringWithFormat:@"The new settings is now supported. The reconfiguration of the Application is done."];
-            UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Reconfiguration Successful" message:errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-            [alertNoConnection show];
-            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-            self.navigationItem.title = @"Menu";
-        }
-        self.needReloadApp = NO;
-        self.img.hidden = YES;
-        self.Menu.hidden = NO;
-    }
-}
-
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -100,7 +145,7 @@
     
 	// Do any additional setup after loading the view, typically from a nib.
     appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-
+    
     self.Menu.delegate = self;
     self.navigationItem.hidesBackButton = YES;
     self.navigationItem.title = nil;
@@ -110,14 +155,15 @@
     if (self.needReloadApp) {
         self.img.hidden = NO;
         self.Menu.hidden = YES;
-        NSLog(@"[needReloadApp true] Img hidden = %hhd", self.img.hidden);
-        NSLog(@"[needReloadApp true] Menu hidden = %hhd", self.Menu.hidden);
+        //NSLog(@"[needReloadApp true] Img hidden = %hhd", self.img.hidden);
+        //NSLog(@"[needReloadApp true] Menu hidden = %hhd", self.Menu.hidden);
+        
         [self performSelectorInBackground:@selector(reloadApp) withObject:self];
     } else {
         self.img.hidden = YES;
         self.Menu.hidden = NO;
-        NSLog(@"[needReloadApp false] Img hidden = %hhd", self.img.hidden);
-        NSLog(@"[needReloadApp false] Menu hidden = %hhd", self.Menu.hidden);
+        //NSLog(@"[needReloadApp false] Img hidden = %hhd", self.img.hidden);
+        //NSLog(@"[needReloadApp false] Menu hidden = %hhd", self.Menu.hidden);
     }
     
     [self initApp];
@@ -149,10 +195,10 @@
                     alertNoConnection.message = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Do you want to disable it ?";
                     [alertNoConnection addButtonWithTitle:@"Settings"];
                 } else if (appDel.roamingSituation && !appDel.roamingIsEnabled) {
-                        alertNoConnection.message = @"Impossible to download content. You are currently in Roaming case and the roaming mode is disabled : it blocks the downloading. Do you want to enable it ?";
+                    alertNoConnection.message = @"Impossible to download content. You are currently in Roaming case and the roaming mode is disabled : it blocks the downloading. Do you want to enable it ?";
                     [alertNoConnection addButtonWithTitle:@"Settings"];
-                /*} else if (!appDel.serverIsOk) {
-                    alertNoConnection.message = @"Impossible to download content on the server because it is not reachable. The application will shut down. Sorry for the inconvenience. Please try later.";*/
+                    /*} else if (!appDel.serverIsOk) {
+                     alertNoConnection.message = @"Impossible to download content on the server because it is not reachable. The application will shut down. Sorry for the inconvenience. Please try later.";*/
                 } else if (!appDel.isDownloadedByNetwork) {
                     alertNoConnection.message = @"Impossible to download content on the server. The network connection is too low or off. The application will shut down. Please try later.";
                 } else if (!appDel.isDownloadedByFile) {
@@ -172,7 +218,7 @@
         UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Application fails" message:errorMsg delegate:self cancelButtonTitle:@"Quit" otherButtonTitles:nil];
         [alertNoConnection show];
     }
-
+    
 }
 
 - (void)configureView
@@ -209,7 +255,7 @@
                 else {
                     [self.Menu loadHTMLString:[AppDelegate createHTMLwithContent:@"<center><font color='blue'>There is no content</font></center>" withAppDep:nil withPageDep:nil] baseURL:url];
                 }
-                    self.navigationItem.title = [page objectForKey:@"Title"];
+                self.navigationItem.title = [page objectForKey:@"Title"];
             }
         }
     }
@@ -239,7 +285,7 @@
     //Relative string : file:///Users/admin/Library/Application%20Support/iPhone%20Simulator/7.1/Applications/FDE30D9E-6C0D-4F1D-96F7-E7B1174A17A2/Library/Application%20Support/details.html
     //Relative Path : /Users/admin/Library/Application Support/iPhone Simulator/7.1/Applications/FDE30D9E-6C0D-4F1D-96F7-E7B1174A17A2/Library/Application Support/details.html
     //Path url : /Users/admin/Library/Application Support/iPhone Simulator/7.1/Applications/FDE30D9E-6C0D-4F1D-96F7-E7B1174A17A2/Library/Application Support/details.html
-
+    
     int index = [APPLICATION_SUPPORT_PATH length] - 1;
     NSString *path = [APPLICATION_SUPPORT_PATH substringToIndex:index];
     //NSLog(@"Path modifié = %@", path);
@@ -269,21 +315,15 @@
 #pragma mark - Alert View
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    BOOL downloadFailure = NO;
-    if (!appDel.isDownloadedByFile && !appDel.isDownloadedByNetwork) {
-        downloadFailure = YES;
-    }
-    if (downloadFailure) {
-        if ([alertView cancelButtonIndex] == buttonIndex) {
-            // Fermer l'application
-            //Home button
-            UIApplication *app = [UIApplication sharedApplication];
-            [app performSelector:@selector(suspend)];
-            // Wait while app is going background
-            [NSThread sleepForTimeInterval:2.0];
-            exit(0);
-        }
-    } else if (!appDel.cacheIsEnabled || !appDel.roamingIsEnabled) {
+    if ([alertView cancelButtonIndex] == buttonIndex) {
+        // Fermer l'application
+        //Home button
+        UIApplication *app = [UIApplication sharedApplication];
+        [app performSelector:@selector(suspend)];
+        // Wait while app is going background
+        [NSThread sleepForTimeInterval:2.0];
+        exit(0);
+    } else if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Settings"]) {
         // Go to settings
         SettingsView *showSettings = [[SettingsView alloc] init];
         showSettings = [self.storyboard instantiateViewControllerWithIdentifier:@"settingsView"];

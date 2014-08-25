@@ -26,15 +26,15 @@ NSString *APPLICATION_SUPPORT_PATH;
     BOOL isConnected = false;
         switch (networkStatus) {
             case NotReachable:
-                NSLog(@"Network Status : NotReachable");
+                //NSLog(@"Network Status : NotReachable");
                 isConnected = false;
                 break;
             case ReachableViaWiFi:
-                NSLog(@"Network Status : ReachableViaWiFi");
+                //NSLog(@"Network Status : ReachableViaWiFi");
                 isConnected = true;
                 break;
             case ReachableViaWWAN:
-                NSLog(@"Network Status : ReachableViaWWAN");
+                //NSLog(@"Network Status : ReachableViaWWAN");
                 isConnected = [self testFastConnection];
                 break;
             default:
@@ -126,12 +126,10 @@ NSString *APPLICATION_SUPPORT_PATH;
     operatorPlistPath = [operatorPlistPath substringFromIndex:operator];
     
     
-    NSLog(@"carrierPlistPath : %@", carrierPlistPath);
-    NSLog(@"operatorPlistPath : %@", operatorPlistPath);
+    //NSLog(@"carrierPlistPath : %@", carrierPlistPath);
+    //NSLog(@"operatorPlistPath : %@", operatorPlistPath);
     // Carrier Bundles/iPhone/20810/carrier.plist
     // Carrier Bundles/iPhone/27001/carrier.plist
-    NSString *test = @"Carrier Bundles/iPhone/20810/carrier.plist";
-    NSComparisonResult resulttest = [carrierPlistPath compare:test];
     
     NSComparisonResult result = [carrierPlistPath compare:operatorPlistPath];
     
@@ -331,7 +329,8 @@ NSString *APPLICATION_SUPPORT_PATH;
 
 - (void) configureApp
 {
-    
+    NSLog(@"Passage dans Configure App");
+    @synchronized(self) {
 #pragma Create the Application Support Folder. Not accessible by users
     // NSHomeDirectory returns the application's sandbox directory. Application Support folder will contain all files that we need for the application
     APPLICATION_SUPPORT_PATH = [NSString stringWithFormat:@"%@/Library/Application Support/", NSHomeDirectory()];
@@ -376,7 +375,7 @@ NSString *APPLICATION_SUPPORT_PATH;
         
         NSString *path = [NSString stringWithFormat:@"%@%@.json", APPLICATION_SUPPORT_PATH, [config objectForKey:@"ApplicationID"]];
         if (![fileManager fileExistsAtPath:path] || self.forceDownloading) {
-            NSLog(@"File does not exist or self.forceDownloading is true");
+            //NSLog(@"File does not exist or self.forceDownloading is true");
             // Check Connection if cache is not enabled
             if (!self.cacheIsEnabled) {
                 
@@ -411,7 +410,7 @@ NSString *APPLICATION_SUPPORT_PATH;
             }
         }
         else {
-            NSLog(@"File exists");
+            //NSLog(@"File exists");
             APPLICATION_FILE = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:&error];
         }
         if (APPLICATION_FILE != Nil) {
@@ -432,13 +431,14 @@ NSString *APPLICATION_SUPPORT_PATH;
         [NSThread sleepForTimeInterval:2.0];
         exit(0);
     }
-    @finally {
+    //NSLog(@"Dl by Network : %hhd", _isDownloadedByNetwork);
+    //NSLog(@"Dl by File : %hhd", _isDownloadedByFile);
+    NSLog(@"End of ConfigureApp Method");
+    if (self.reloadApp || self.forceDownloading) {
         NSNotification * notif = [NSNotification notificationWithName:@"ConfigureAppNotification" object:self];
         [[NSNotificationCenter defaultCenter] postNotification:notif];
     }
-    NSLog(@"Dl by Network : %hhd", _isDownloadedByNetwork);
-    NSLog(@"Dl by File : %hhd", _isDownloadedByFile);
-    NSLog(@"End of ConfigureApp Method");
+    }
 }
 
 + (NSMutableString *) addFiles:(NSArray *)dependencies
