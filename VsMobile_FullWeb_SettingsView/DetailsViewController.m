@@ -48,30 +48,19 @@
     self.navigationItem.hidesBackButton = YES;
     // Get Application's Dependencies
     @try {
-        NSError *error = [[NSError alloc] init];
-        //application = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:APPLICATION_FILE options:NSJSONReadingMutableLeaves error:&error];
-        //if (application == nil) {
-        if (JSON_FILE == Nil) {
-            NSLog(@"An error occured during the Deserialization of Application file : %@", error);
+        if (APPLICATION_FILE == Nil) {
             // Throw exception
-            NSException *e = [NSException exceptionWithName:error.localizedDescription reason:error.localizedFailureReason userInfo:error.userInfo];
+            NSException *e = [NSException exceptionWithName:@"Loading Fails" reason:@"NSDictionnary APPLICATION_FILE is nil" userInfo:nil];
             @throw e;
         }
         else {
-            /*if ([application objectForKey:@"Dependencies"] != [NSNull null]) {
-                appDependencies = [application objectForKey:@"Dependencies"];
+            if ([APPLICATION_FILE objectForKey:@"Dependencies"] != [NSNull null]) {
+                appDependencies = [APPLICATION_FILE objectForKey:@"Dependencies"];
             }
-            if ([application objectForKey:@"Pages"] != [NSNull null]) {
-                allPages = [application objectForKey:@"Pages"];
+            if ([APPLICATION_FILE objectForKey:@"Pages"] != [NSNull null]) {
+                allPages = [APPLICATION_FILE objectForKey:@"Pages"];
             }
-            self.navigationItem.backBarButtonItem.title = [application objectForKey:@"Name"];*/
-            if ([JSON_FILE objectForKey:@"Dependencies"] != [NSNull null]) {
-                appDependencies = [JSON_FILE objectForKey:@"Dependencies"];
-            }
-            if ([JSON_FILE objectForKey:@"Pages"] != [NSNull null]) {
-                allPages = [JSON_FILE objectForKey:@"Pages"];
-            }
-            self.navigationItem.backBarButtonItem.title = [JSON_FILE objectForKey:@"Name"];
+            self.navigationItem.backBarButtonItem.title = [APPLICATION_FILE objectForKey:@"Name"];
             [self configureView];
         }
     }
@@ -125,7 +114,7 @@
                     }
                     
                     // Set Page's title
-                    if ([JSON_FILE objectForKey:@"Title"] == [NSNull null]) {
+                    if ([APPLICATION_FILE objectForKey:@"Title"] == [NSNull null]) {
                         self.navigationItem.title = @"No Name property";
                     }
                     else {

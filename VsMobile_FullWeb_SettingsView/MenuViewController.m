@@ -142,20 +142,14 @@
     @try {
         if (!self.Menu.hidden) {
             if (appDel.isDownloadedByNetwork || appDel.isDownloadedByFile) {
-                NSError *error = [[NSError alloc] init];
-                //application = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:APPLICATION_FILE options:NSJSONReadingMutableLeaves error:&error];
-                //if (application != nil) {
-                    //appDependencies = [application objectForKey:@"Dependencies"];
-                    //allPages = [application objectForKey:@"Pages"];
-                if (JSON_FILE != Nil) {
-                    appDependencies = [JSON_FILE objectForKey:@"Dependencies"];
-                    allPages = [JSON_FILE objectForKey:@"Pages"];
+                if (APPLICATION_FILE != Nil) {
+                    appDependencies = [APPLICATION_FILE objectForKey:@"Dependencies"];
+                    allPages = [APPLICATION_FILE objectForKey:@"Pages"];
                     [self configureView];
                 }
                 else {
-                    NSLog(@"An error occured during the Loading of the Application : %@", error);
                     // throw exception
-                    NSException *e = [NSException exceptionWithName:error.localizedDescription reason:error.localizedFailureReason userInfo:error.userInfo];
+                    NSException *e = [NSException exceptionWithName:@"Loading Fails" reason:@"NSDictionnary APPLICATION_FILE is nil" userInfo:nil];
                     @throw e;
                 }
             }

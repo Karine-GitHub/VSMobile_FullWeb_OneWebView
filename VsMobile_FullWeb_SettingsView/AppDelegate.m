@@ -8,8 +8,7 @@
 
 #import "AppDelegate.h"
 
-NSDictionary *JSON_FILE;
-//NSData *APPLICATION_FILE;
+NSDictionary *APPLICATION_FILE;
 NSData *FEED_FILE;
 NSString *APPLICATION_SUPPORT_PATH;
 
@@ -295,10 +294,8 @@ NSString *APPLICATION_SUPPORT_PATH;
 
 - (void) searchDependencies
 {
-    //if ([self.application objectForKey:@"Dependencies"] != [NSNull null]) {
-        //for (NSMutableDictionary *allAppDep in [self.application objectForKey:@"Dependencies"]) {
-    if ([JSON_FILE objectForKey:@"Dependencies"] != [NSNull null]) {
-        for (NSMutableDictionary *allAppDep in [JSON_FILE objectForKey:@"Dependencies"]) {
+    if ([APPLICATION_FILE objectForKey:@"Dependencies"] != [NSNull null]) {
+        for (NSMutableDictionary *allAppDep in [APPLICATION_FILE objectForKey:@"Dependencies"]) {
             if ([allAppDep objectForKey:@"Url"] != [NSNull null] && [allAppDep objectForKey:@"Name"] != [NSNull null]) {
                 [self saveFile:[allAppDep objectForKey:@"Url"] fileName:[allAppDep objectForKey:@"Name"] dirName:[allAppDep objectForKey:@"Path"]];
             }
@@ -307,10 +304,8 @@ NSString *APPLICATION_SUPPORT_PATH;
             }
         }
     }
-    //if ([self.application objectForKey:@"Pages"] != [NSNull null]) {
-        //for (NSMutableDictionary *allPages in [self.application objectForKey:@"Pages"]) {
-    if ([JSON_FILE objectForKey:@"Pages"] != [NSNull null]) {
-        for (NSMutableDictionary *allPages in [JSON_FILE objectForKey:@"Pages"]) {
+    if ([APPLICATION_FILE objectForKey:@"Pages"] != [NSNull null]) {
+        for (NSMutableDictionary *allPages in [APPLICATION_FILE objectForKey:@"Pages"]) {
             for (NSMutableDictionary *allPageDep in [allPages objectForKey:@"Dependencies"]) {
                 if ([allPageDep objectForKey:@"Url"] != [NSNull null] && [allPageDep objectForKey:@"Name"] != [NSNull null]) {
                     [self saveFile:[allPageDep objectForKey:@"Url"] fileName:[allPageDep objectForKey:@"Name"]dirName:[allPageDep objectForKey:@"Path"]];
@@ -389,7 +384,6 @@ NSString *APPLICATION_SUPPORT_PATH;
                         // User is in Roaming case & enable it => Download
                         success = [self testConnection];
                         if (success) {
-                            //APPLICATION_FILE = [NSData dataWithContentsOfURL:url];
                             self.applicationDatas = [NSData dataWithContentsOfURL:url];
                             success = [[NSData dataWithContentsOfURL:url] writeToFile:path options:NSDataWritingAtomic error:&error];
                             if (success) {
@@ -402,7 +396,6 @@ NSString *APPLICATION_SUPPORT_PATH;
                     // User is not in Roaming case => Download
                     success = [self testConnection];
                     if (success) {
-                        //APPLICATION_FILE = [NSData dataWithContentsOfURL:url];
                         self.applicationDatas = [NSData dataWithContentsOfURL:url];
                         success = [[NSData dataWithContentsOfURL:url] writeToFile:path options:NSDataWritingAtomic error:&error];
                         if (success) {
@@ -414,17 +407,14 @@ NSString *APPLICATION_SUPPORT_PATH;
         }
         else {
             //NSLog(@"File exists");
-            //APPLICATION_FILE = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:&error];
             self.applicationDatas = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:&error];
             _isDownloadedByFile = true;
         }
         
-        //if (APPLICATION_FILE != Nil) {
         if (self.applicationDatas != Nil) {
-            //self.application = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:APPLICATION_FILE options:NSJSONReadingMutableLeaves error:&error];
-            JSON_FILE = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:self.applicationDatas options:NSJSONReadingMutableLeaves error:&error];
+            APPLICATION_FILE = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:self.applicationDatas options:NSJSONReadingMutableLeaves error:&error];
             //if (self.application != Nil) {
-            if (JSON_FILE != Nil) {
+            if (APPLICATION_FILE != Nil) {
                 [self searchDependencies];
             }
             else {
