@@ -49,21 +49,29 @@
     // Get Application's Dependencies
     @try {
         NSError *error = [[NSError alloc] init];
-        application = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:APPLICATION_FILE options:NSJSONReadingMutableLeaves error:&error];
-        if (application == nil) {
+        //application = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:APPLICATION_FILE options:NSJSONReadingMutableLeaves error:&error];
+        //if (application == nil) {
+        if (JSON_FILE == Nil) {
             NSLog(@"An error occured during the Deserialization of Application file : %@", error);
             // Throw exception
             NSException *e = [NSException exceptionWithName:error.localizedDescription reason:error.localizedFailureReason userInfo:error.userInfo];
             @throw e;
         }
         else {
-            if ([application objectForKey:@"Dependencies"] != [NSNull null]) {
+            /*if ([application objectForKey:@"Dependencies"] != [NSNull null]) {
                 appDependencies = [application objectForKey:@"Dependencies"];
             }
             if ([application objectForKey:@"Pages"] != [NSNull null]) {
                 allPages = [application objectForKey:@"Pages"];
             }
-            self.navigationItem.backBarButtonItem.title = [application objectForKey:@"Name"];
+            self.navigationItem.backBarButtonItem.title = [application objectForKey:@"Name"];*/
+            if ([JSON_FILE objectForKey:@"Dependencies"] != [NSNull null]) {
+                appDependencies = [JSON_FILE objectForKey:@"Dependencies"];
+            }
+            if ([JSON_FILE objectForKey:@"Pages"] != [NSNull null]) {
+                allPages = [JSON_FILE objectForKey:@"Pages"];
+            }
+            self.navigationItem.backBarButtonItem.title = [JSON_FILE objectForKey:@"Name"];
             [self configureView];
         }
     }
@@ -88,7 +96,6 @@
         @try {
             for (NSMutableDictionary *details in allPages) {
                 if ([[details objectForKey:@"Id"] isEqual:self.detailItem]) {
-                //if ([[details objectForKey:@"Name"] isEqualToString:[self.detailItem capitalizedString]]) {
                     // Get Page's Dependencies
                     if ([details objectForKey:@"Dependencies"] != [NSNull null]) {
                         pageDependencies = [details objectForKey:@"Dependencies"];
@@ -118,7 +125,7 @@
                     }
                     
                     // Set Page's title
-                    if ([application objectForKey:@"Title"] == [NSNull null]) {
+                    if ([JSON_FILE objectForKey:@"Title"] == [NSNull null]) {
                         self.navigationItem.title = @"No Name property";
                     }
                     else {

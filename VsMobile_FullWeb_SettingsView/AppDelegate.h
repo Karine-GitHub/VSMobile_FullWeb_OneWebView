@@ -12,6 +12,7 @@
 #import "SettingsView.h"
 
 // GLOBAL VARIABLES json files
+extern NSDictionary *JSON_FILE;
 extern NSData *APPLICATION_FILE;
 extern NSData *FEED_FILE;
 // END GLOBAL VARIABLES
@@ -22,7 +23,9 @@ extern NSString *APPLICATION_SUPPORT_PATH;
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
+
 @property (strong, nonatomic) NSMutableDictionary *application;
+@property (strong, nonatomic) NSData *applicationDatas;
 
 // Settings
 @property BOOL cacheIsEnabled;

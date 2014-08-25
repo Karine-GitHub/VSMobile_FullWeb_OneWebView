@@ -143,10 +143,13 @@
         if (!self.Menu.hidden) {
             if (appDel.isDownloadedByNetwork || appDel.isDownloadedByFile) {
                 NSError *error = [[NSError alloc] init];
-                application = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:APPLICATION_FILE options:NSJSONReadingMutableLeaves error:&error];
-                if (application != nil) {
-                    appDependencies = [application objectForKey:@"Dependencies"];
-                    allPages = [application objectForKey:@"Pages"];
+                //application = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:APPLICATION_FILE options:NSJSONReadingMutableLeaves error:&error];
+                //if (application != nil) {
+                    //appDependencies = [application objectForKey:@"Dependencies"];
+                    //allPages = [application objectForKey:@"Pages"];
+                if (JSON_FILE != Nil) {
+                    appDependencies = [JSON_FILE objectForKey:@"Dependencies"];
+                    allPages = [JSON_FILE objectForKey:@"Pages"];
                     [self configureView];
                 }
                 else {
