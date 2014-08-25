@@ -29,58 +29,32 @@
 // Pas appelé lors du retour depuis les settings
 - (void) viewWillAppear:(BOOL)animated
 {
-    NSLog(@"Passage dans viewWillAppear MENU");
-
     [super viewWillAppear:YES];
-    //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"SettingsIsFinishedNotification" object:nil];
-    //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"ConfigureAppNotification" object:nil];
-    //[[NSNotificationCenter defaultCenter] removeObserver:self];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsDone:) name:@"SettingsIsFinishedNotification" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureAppDone:) name:@"ConfigureAppNotification" object:nil];
-    
-    
-    // TEST notif interne : marche pas. Rentre pas dans la méthode
-    //[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureAppDone:) name:@"TestNotificationSelf" object:nil];
-
 }
 
 
 - (void) viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:YES];
-    NSLog(@"Passage dans viewDidDisappear MENU");
-    // Si notif enlevées ici, jamais rappelées lors du retour des settings
-    //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"SettingsIsFinishedNotification" object:nil];
+
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"ConfigureAppNotification" object:nil];
 }
 
 - (void)settingsDone:(NSNotification *)notification {
-    NSLog(@"Passage dans settingsDone => notif OK");
-    //@synchronized(self) {
-        //[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureAppDone:) name:@"ConfigureAppNotification" object:nil];
-        //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"SettingsIsFinishedNotification" object:nil];
-        
+
         self.needReloadApp = YES;
         self.navigationItem.title = @"Reconfiguration in progress";
         [self viewDidLoad];
-    
-    /* Test Notif Interne. Marche pas. Rentre pas dans la méthode.
-    NSNotification * notif = [NSNotification notificationWithName:@"TestNotificationSelf" object:self];
-    
-    //[[NSNotificationCenter defaultCenter] performSelectorOnMainThread:@selector(postNotification:) withObject:notif waitUntilDone:YES];
-    [[NSNotificationCenter defaultCenter] postNotification:notif]; */
 
-    //}
 }
 
 - (void)configureAppDone:(NSNotification *)notification {
     
     // Check if settings view is visible
-    NSLog(@"[Menu_configureApp] Visible view controller = %@", self.navigationController.visibleViewController);
-    //@synchronized(self) {
     if (appDel.reloadApp || appDel.forceDownloading) {
-        //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"ConfigureAppNotification" object:nil];
         if ([self.navigationController.visibleViewController isKindOfClass:[MenuViewController class]])
         {
             @try {
@@ -105,13 +79,11 @@
             }
         }
     }
-    //}
 }
 
 - (void)reloadApp
 {
     // Check if menu view is visible
-    NSLog(@"[MenuView_reloadApp] Visible view controller = %@", self.navigationController.visibleViewController);
     if ([self.navigationController.visibleViewController isKindOfClass:[MenuViewController class]])
     {
         if (appDel == Nil) {
@@ -155,15 +127,10 @@
     if (self.needReloadApp) {
         self.img.hidden = NO;
         self.Menu.hidden = YES;
-        //NSLog(@"[needReloadApp true] Img hidden = %hhd", self.img.hidden);
-        //NSLog(@"[needReloadApp true] Menu hidden = %hhd", self.Menu.hidden);
-        
         [self performSelectorInBackground:@selector(reloadApp) withObject:self];
     } else {
         self.img.hidden = YES;
         self.Menu.hidden = NO;
-        //NSLog(@"[needReloadApp false] Img hidden = %hhd", self.img.hidden);
-        //NSLog(@"[needReloadApp false] Menu hidden = %hhd", self.Menu.hidden);
     }
     
     [self initApp];

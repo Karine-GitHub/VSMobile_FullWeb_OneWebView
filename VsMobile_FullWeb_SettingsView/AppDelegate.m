@@ -124,8 +124,6 @@ NSString *APPLICATION_SUPPORT_PATH;
     int operator = [operatorPlistPath rangeOfString:@"Carrier"].location;
     carrierPlistPath = [carrierPlistPath substringFromIndex:carrier];
     operatorPlistPath = [operatorPlistPath substringFromIndex:operator];
-    
-    
     //NSLog(@"carrierPlistPath : %@", carrierPlistPath);
     //NSLog(@"operatorPlistPath : %@", operatorPlistPath);
     // Carrier Bundles/iPhone/20810/carrier.plist
@@ -138,7 +136,6 @@ NSString *APPLICATION_SUPPORT_PATH;
     } else {
          self.roamingSituation = YES;
     }
-    
     
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]) {
         self.refreshInterval = (NSInteger *)[[NSUserDefaults standardUserDefaults] integerForKey:@"intervalChoice"];
@@ -329,7 +326,6 @@ NSString *APPLICATION_SUPPORT_PATH;
 
 - (void) configureApp
 {
-    NSLog(@"Passage dans Configure App");
     @synchronized(self) {
 #pragma Create the Application Support Folder. Not accessible by users
     // NSHomeDirectory returns the application's sandbox directory. Application Support folder will contain all files that we need for the application

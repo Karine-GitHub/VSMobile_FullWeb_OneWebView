@@ -150,9 +150,7 @@
 {
     int index = [APPLICATION_SUPPORT_PATH length] - 1;
     NSString *path = [APPLICATION_SUPPORT_PATH substringToIndex:index];
-    //NSLog(@"Path modifié = %@", path);
-    //NSLog(@"Query = %@", [request.URL query]);
-    
+
     if ([[request.URL relativePath] isEqualToString:path]) {
         return YES;
     } else if ([[request.URL relativePath] isEqualToString:[NSString stringWithFormat:@"%@details.html", APPLICATION_SUPPORT_PATH]]) {

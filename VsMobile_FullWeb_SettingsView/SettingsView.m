@@ -35,32 +35,26 @@
     [super viewWillAppear:YES];
     appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
 
-    // Be sure observer is not added twice
-    //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"ConfigureAppNotification" object:nil];
-    //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"RefreshAppNotification" object:nil];
-    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureApp:) name:@"ConfigureAppNotification" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshApp:) name:@"RefreshAppNotification" object:nil];
 }
 
 - (void) viewWillDisappear:(BOOL)animated
 {
-    NSLog(@"Passage dans viewDidDisappear SETTINGS");
     [super viewWillDisappear:YES];
     // Register settings
     NSNumber *cache = [NSNumber numberWithBool:appDel.cacheIsEnabled];
     NSNumber *roaming = [NSNumber numberWithBool:appDel.roamingIsEnabled];
     [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:cache forKey:@"cache"]];
     [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:roaming forKey:@"roaming"]];
+    
     // Remove observers
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"ConfigureAppNotification" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"RefreshAppNotification" object:nil];
+    
     // Notify that settings was modified
     if (self.reconfigNecessary) {
         NSNotification * notif = [NSNotification notificationWithName:@"SettingsIsFinishedNotification" object:self];
-
-        // Change rien
-        //[[NSNotificationCenter defaultCenter] performSelectorOnMainThread:@selector(postNotification:) withObject:notif waitUntilDone:YES];
         [[NSNotificationCenter defaultCenter] postNotification:notif];
     }
 }
@@ -68,7 +62,6 @@
 - (void)configureApp:(NSNotification *)notification {
     
     // Check if settings view is visible
-    NSLog(@"[SettingsView_ConfigureApp] Visible view controller = %@", self.navigationController.visibleViewController);
     if ([self.navigationController.visibleViewController isKindOfClass:[SettingsView class]])
     {
         [NSThread sleepForTimeInterval:2.0];
