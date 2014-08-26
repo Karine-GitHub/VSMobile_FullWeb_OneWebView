@@ -42,9 +42,32 @@
 - (void) viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:YES];
+    // Refresh Cache Mode & Roaming Mode (not always refresh because not necessary passed in ViewDidLoad)
+    [appDel setCacheIsEnabled:self.cacheMode.isOn];
+    [appDel setRoamingIsEnabled:self.roamingMode.isOn];
+
+    // Notify that settings was modified
+    // Si les settings sont bloquants : cas Cache Mode + cache = Oko, RoamingSituation + RoamingDisable => Event Conflictual Situation
+    // sinon Event Settings is Finished
+        float size = [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue];
+        if (self.cacheMode.isOn && size == 0.0) {
+            NSNotification * notif = [NSNotification notificationWithName:@"ConflictualSituationNotification" object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:notif];
+        } else if (appDel.roamingSituation && !self.roamingMode.isOn){
+            NSNotification * notif = [NSNotification notificationWithName:@"ConflictualSituationNotification" object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:notif];
+        } else if (self.reconfigNecessary) {
+            NSNotification * notif = [NSNotification notificationWithName:@"SettingsModificationNotification" object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:notif];
+        } else {
+            NSNotification * notif = [NSNotification notificationWithName:@"NoModificationNotification" object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:notif];
+        }
+
+
     // Register settings
-    NSNumber *cache = [NSNumber numberWithBool:appDel.cacheIsEnabled];
-    NSNumber *roaming = [NSNumber numberWithBool:appDel.roamingIsEnabled];
+    NSNumber *cache = [NSNumber numberWithBool:self.cacheMode.isOn];
+    NSNumber *roaming = [NSNumber numberWithBool:self.roamingMode.isOn];
     [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:cache forKey:@"cache"]];
     [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:roaming forKey:@"roaming"]];
     
@@ -52,11 +75,7 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"ConfigureAppNotification" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"RefreshAppNotification" object:nil];
     
-    // Notify that settings was modified
-    if (self.reconfigNecessary) {
-        NSNotification * notif = [NSNotification notificationWithName:@"SettingsIsFinishedNotification" object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:notif];
-    }
+
 }
 
 - (void)configureApp:(NSNotification *)notification {
@@ -64,6 +83,7 @@
     // Check if settings view is visible
     if ([self.navigationController.visibleViewController isKindOfClass:[SettingsView class]])
     {
+        self.reconfigNecessary = NO;
         [NSThread sleepForTimeInterval:2.0];
         // Alert user that downloading is finished
         self.errorMsg = [NSString stringWithFormat:@"The downloading of files is done."];
@@ -100,7 +120,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
+    self.navigationItem.backBarButtonItem.title = @"OK";
     self.reconfigNecessary = NO;
 
     self.SettingsTable.delegate = self;
@@ -157,7 +177,7 @@
 - (IBAction)dataLoadingClick:(id)sender {
     NSLog(@"Click Loading");
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-    self.reconfigNecessary = NO;
+    self.reconfigNecessary = YES;
 
     // Download all
     @try {
@@ -172,6 +192,10 @@
         }
         UIAlertView *alertLoadingFail = [[UIAlertView alloc] initWithTitle:@"Downloading fails" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alertLoadingFail show];
+    }
+    @finally {
+        [appDel setForceDownloading:NO];
+
     }
 }
 

@@ -16,8 +16,10 @@
 @property (weak, nonatomic) IBOutlet UIButton *Settings;
 @property (strong, nonatomic) IBOutlet UIImageView *img;
 
+@property (strong, nonatomic) UIAlertView *settingsDone;
 @property (nonatomic,retain) DetailsViewController *showDetails;
 
 @property BOOL needReloadApp;
+@property BOOL isConflictual;
 
 @end

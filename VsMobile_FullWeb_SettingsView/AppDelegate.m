@@ -327,6 +327,9 @@ NSString *APPLICATION_SUPPORT_PATH;
 - (void) configureApp
 {
     @synchronized(self) {
+        if (self.forceDownloading) {
+            self.downloadIsFinished = NO;
+        }
 #pragma Create the Application Support Folder. Not accessible by users
     // NSHomeDirectory returns the application's sandbox directory. Application Support folder will contain all files that we need for the application
     APPLICATION_SUPPORT_PATH = [NSString stringWithFormat:@"%@/Library/Application Support/", NSHomeDirectory()];
@@ -410,7 +413,7 @@ NSString *APPLICATION_SUPPORT_PATH;
             self.applicationDatas = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:&error];
             _isDownloadedByFile = true;
         }
-        
+    
         if (self.applicationDatas != Nil) {
             APPLICATION_FILE = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:self.applicationDatas options:NSJSONReadingMutableLeaves error:&error];
             //if (self.application != Nil) {
@@ -429,6 +432,9 @@ NSString *APPLICATION_SUPPORT_PATH;
         // Wait while app is going background
         [NSThread sleepForTimeInterval:2.0];
         exit(0);
+    }
+    @finally {
+        self.downloadIsFinished = YES;
     }
     //NSLog(@"Dl by Network : %hhd", _isDownloadedByNetwork);
     //NSLog(@"Dl by File : %hhd", _isDownloadedByFile);

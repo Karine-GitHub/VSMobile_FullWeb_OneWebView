@@ -35,6 +35,7 @@ extern NSString *APPLICATION_SUPPORT_PATH;
 
 // Used for checking if downloading is OK (differentiation for setting an appropriate error message)
 @property BOOL serverIsOk;
+@property BOOL downloadIsFinished;
 @property BOOL isDownloadedByNetwork;
 @property BOOL isDownloadedByFile;
 
