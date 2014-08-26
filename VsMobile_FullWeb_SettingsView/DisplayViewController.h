@@ -8,7 +8,6 @@
 
 #import <UIKit/UIKit.h>
 #import "SettingsView.h"
-#import "DetailsViewController.h"
 
 @interface DisplayViewController : UIViewController <UIAlertViewDelegate, UITextViewDelegate, UISplitViewControllerDelegate, UIWebViewDelegate>
 
@@ -19,6 +18,8 @@
 @property id PageID;
 
 @property (strong, nonatomic) UIAlertView *settingsDone;
+
+@property (strong,nonatomic) NSString *whereWasI;
 
 @property BOOL needReloadApp;
 @property BOOL isConflictual;

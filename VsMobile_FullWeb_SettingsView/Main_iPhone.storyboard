@@ -61,7 +61,6 @@
                     <size key="freeformSize" width="320" height="568"/>
                     <connections>
                         <outlet property="Display" destination="UND-tu-cLY" id="uYe-Yh-vdu"/>
-                        <outlet property="Menu" destination="UND-tu-cLY" id="E2E-gc-hQ4"/>
                         <outlet property="Settings" destination="p6R-64-Ew0" id="YsD-5S-k0s"/>
                         <outlet property="img" destination="DyL-nI-ylO" id="cSd-1z-VZY"/>
                     </connections>

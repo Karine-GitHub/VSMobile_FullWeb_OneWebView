@@ -21,7 +21,6 @@
 		84C71651199CCEE000E023E1 /* VsMobile_FullWeb_SettingsViewTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C71650199CCEE000E023E1 /* VsMobile_FullWeb_SettingsViewTests.m */; };
 		84C71668199CCF3400E023E1 /* 20-gear2.png in Resources */ = {isa = PBXBuildFile; fileRef = 84C7165A199CCF3300E023E1 /* 20-gear2.png */; };
 		84C71669199CCF3400E023E1 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C7165C199CCF3300E023E1 /* AppDelegate.m */; };
-		84C7166C199CCF3400E023E1 /* DetailsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C71663199CCF3400E023E1 /* DetailsViewController.m */; };
 		84C7166D199CCF3400E023E1 /* DisplayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C71665199CCF3400E023E1 /* DisplayViewController.m */; };
 		84C7166E199CCF3400E023E1 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C71667199CCF3400E023E1 /* Reachability.m */; };
 		84C71670199CCFC800E023E1 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C7166F199CCFC800E023E1 /* CoreTelephony.framework */; };
@@ -296,7 +295,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84C7166C199CCF3400E023E1 /* DetailsViewController.m in Sources */,
 				84C71669199CCF3400E023E1 /* AppDelegate.m in Sources */,
 				8480C645199CF47C00368E81 /* RefreshSettingViewController.m in Sources */,
 				84C71638199CCEE000E023E1 /* main.m in Sources */,

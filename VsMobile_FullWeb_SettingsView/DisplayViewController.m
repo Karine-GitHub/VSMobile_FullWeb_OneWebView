@@ -73,20 +73,17 @@
     @synchronized(self) {
         if ([notification.name isEqualToString:@"SettingsModificationNotification"]) {
             self.needReloadApp = YES;
-            //[self performSelectorOnMainThread:@selector(viewDidLoad) withObject:self waitUntilDone:YES];
             [self viewDidLoad];
         } else {
             self.needReloadApp = NO;
             self.isConflictual = NO;
-            self.navigationItem.title = @"Menu";
+            self.navigationItem.title = self.whereWasI;
         }
     }
 }
 - (void)conflictIssue:(NSNotification *)notification {
     @synchronized(self){
         self.isConflictual = YES;
-        //[self performSelectorOnMainThread:@selector(viewDidLoad) withObject:self waitUntilDone:YES];
-
         [self viewDidLoad];
     }
 }
@@ -103,7 +100,7 @@
                     self.settingsDone = [[UIAlertView alloc] initWithTitle:@"Reconfiguration Successful" message:errorMsg delegate:self cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
                     [self.settingsDone show];
                     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-                    self.navigationItem.title = @"Menu";
+                    self.navigationItem.title = self.whereWasI;
                     //}
                 } @catch (NSException *exception) {
                     errorMsg = @"Reconfig fails";
@@ -111,8 +108,6 @@
                     //[self.settingsDone show];
                 } @finally {
                     self.needReloadApp = NO;
-                    //[self performSelectorInBackground:@selector(viewDidLoad) withObject:self];
-                    //[self performSelectorOnMainThread:@selector(viewDidLoad) withObject:self waitUntilDone:YES];
                     [self viewDidLoad];
                 }
             }
@@ -162,6 +157,7 @@
     
     self.Display.delegate = self;
     self.navigationItem.hidesBackButton = YES;
+    self.navigationItem.title = self.whereWasI;
     
     [self.img setImage:[UIImage imageNamed:@"LaunchImage-700"]];
     
@@ -211,7 +207,7 @@
                 if (APPLICATION_FILE != Nil) {
                 appDependencies = [APPLICATION_FILE objectForKey:@"Dependencies"];
                 allPages = [APPLICATION_FILE objectForKey:@"Pages"];
-                    if (self.PageID) {
+                    if (self.PageID && ![self.whereWasI isEqualToString:@"Menu"]) {
                         [self configureDetails];
                     } else {
                         [self configureHome];
@@ -338,6 +334,7 @@
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    self.whereWasI = self.navigationItem.title;
 }
 
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
@@ -351,19 +348,22 @@
     
     int index = [APPLICATION_SUPPORT_PATH length] - 1;
     NSString *path = [APPLICATION_SUPPORT_PATH substringToIndex:index];
-    //NSLog(@"Path modifié = %@", path);
-    //NSLog(@"Query = %@", [request.URL query]);
+    NSLog(@"Path modifié = %@", path);
+    NSLog(@"Query = %@", [request.URL query]);
+    NSLog(@"RelativePath = %@", [request.URL relativePath]);
     
     if ([[request.URL relativePath] isEqualToString:path]) {
         // First loading
         return YES;
     } else if ([[request.URL relativePath] isEqualToString:[NSString stringWithFormat:@"%@index.html", APPLICATION_SUPPORT_PATH]]) {
+        self.navigationItem.title = @"Menu";
         return YES;
     } else if ([[request.URL relativePath] isEqualToString:[NSString stringWithFormat:@"%@details.html", APPLICATION_SUPPORT_PATH]]) {
         return YES;
     } else if ([request.URL query] != nil) {
         self.PageID = [request.URL query];
-        return NO;
+        [self configureDetails];
+        return YES;
     }
     return NO;
 }
@@ -393,12 +393,7 @@
         [alertView dismissWithClickedButtonIndex:buttonIndex animated:YES];
         SettingsView *showSettings = [[SettingsView alloc] init];
         showSettings = [self.storyboard instantiateViewControllerWithIdentifier:@"settingsView"];
-        
         [self.navigationController pushViewController:showSettings animated:YES];
-
-        // Switch cache mode not responsive in all cases
-        //[self.navigationController performSelectorInBackground:@selector(pushViewController:animated:) withObject:showSettings];
-        //[self.navigationController performSelectorOnMainThread:@selector(pushViewController:animated:) withObject:showSettings waitUntilDone:YES];
 
     } else if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"OK"]) {
         // This alertView need to reload the init

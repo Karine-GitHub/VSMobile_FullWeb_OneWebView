@@ -140,6 +140,7 @@
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    self.where
 }
 
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
