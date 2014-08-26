@@ -1,8 +1,8 @@
 //
 //  AppDelegate.m
-//  VsMobile_FullWeb_SettingsView
+//  VsMobile_FullWeb_OneWebView
 //
-//  Created by admin on 8/8/14.
+//  Created by admin on 8/26/14.
 //  Copyright (c) 2014 ___FULLUSERNAME___. All rights reserved.
 //
 

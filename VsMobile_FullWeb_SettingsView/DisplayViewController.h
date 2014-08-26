@@ -1,8 +1,8 @@
 //
-//  MenuViewController.h
-//  VsMobile_FullWeb_SettingsView
+//  DisplayViewController.h
+//  VsMobile_FullWeb_OneWebView
 //
-//  Created by admin on 8/8/14.
+//  Created by admin on 8/26/14.
 //  Copyright (c) 2014 ___FULLUSERNAME___. All rights reserved.
 //
 
@@ -10,14 +10,15 @@
 #import "SettingsView.h"
 #import "DetailsViewController.h"
 
-@interface MenuViewController : UIViewController <UIAlertViewDelegate, UITextViewDelegate, UISplitViewControllerDelegate, UIWebViewDelegate>
+@interface DisplayViewController : UIViewController <UIAlertViewDelegate, UITextViewDelegate, UISplitViewControllerDelegate, UIWebViewDelegate>
 
-@property (weak, nonatomic) IBOutlet UIWebView *Menu;
+@property (weak, nonatomic) IBOutlet UIWebView *Display;
 @property (weak, nonatomic) IBOutlet UIButton *Settings;
 @property (strong, nonatomic) IBOutlet UIImageView *img;
 
+@property id PageID;
+
 @property (strong, nonatomic) UIAlertView *settingsDone;
-@property (nonatomic,retain) DetailsViewController *showDetails;
 
 @property BOOL needReloadApp;
 @property BOOL isConflictual;

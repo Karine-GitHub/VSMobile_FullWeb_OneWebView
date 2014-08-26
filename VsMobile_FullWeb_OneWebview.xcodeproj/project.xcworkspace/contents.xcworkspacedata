@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:VsMobile_FullWeb_SettingsView.xcodeproj">
+      location = "self:VsMobile_FullWeb_OneWebview.xcodeproj">
    </FileRef>
 </Workspace>

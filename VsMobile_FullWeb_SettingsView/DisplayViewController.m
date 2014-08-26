@@ -1,19 +1,19 @@
 //
-//  MenuViewController.m
-//  VsMobile_FullWeb_SettingsView
+//  DisplayViewController.m
+//  VsMobile_FullWeb_OneWebView
 //
-//  Created by admin on 8/8/14.
+//  Created by admin on 8/26/14.
 //  Copyright (c) 2014 ___FULLUSERNAME___. All rights reserved.
 //
 #import "AppDelegate.h"
-#import "MenuViewController.h"
+#import "DisplayViewController.h"
 
 
-@interface MenuViewController ()
+@interface DisplayViewController ()
 
 @end
 
-@implementation MenuViewController {
+@implementation DisplayViewController {
     AppDelegate *appDel;
     NSString *errorMsg;
     NSMutableDictionary *application;
@@ -96,8 +96,6 @@
     // Check if settings view is visible
     @synchronized(self){
         if (appDel.reloadApp || appDel.forceDownloading) {
-            if ([self.navigationController.visibleViewController isKindOfClass:[MenuViewController class]])
-            {
                 @try {
                     [NSThread sleepForTimeInterval:2.0];
                     // Alert user that downloading is finished
@@ -119,15 +117,13 @@
                 }
             }
         }
-    }
 }
 
 - (void)reloadApp
 {
     @synchronized(self) {
     // Check if menu view is visible
-    if ([self.navigationController.visibleViewController isKindOfClass:[MenuViewController class]])
-    {
+
         if (appDel == Nil) {
             appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
         }
@@ -148,7 +144,6 @@
             [appDel setReloadApp:NO];
         }
     }
-    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -165,24 +160,23 @@
 	// Do any additional setup after loading the view, typically from a nib.
     appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     
-    self.Menu.delegate = self;
+    self.Display.delegate = self;
     self.navigationItem.hidesBackButton = YES;
-     self.navigationItem.title = @"Menu";
     
     [self.img setImage:[UIImage imageNamed:@"LaunchImage-700"]];
     
     if (self.isConflictual) {
         self.navigationItem.title = @"Conflictual situation";
         self.img.hidden = NO;
-        self.Menu.hidden = YES;
+        self.Display.hidden = YES;
     } else if (self.needReloadApp) {
         self.navigationItem.title = @"Reconfiguration in progress";
         self.img.hidden = NO;
-        self.Menu.hidden = YES;
+        self.Display.hidden = YES;
         [self performSelectorInBackground:@selector(reloadApp) withObject:self];
     } else {
         self.img.hidden = YES;
-        self.Menu.hidden = NO;
+        self.Display.hidden = NO;
     }
     
     [self initApp];
@@ -211,13 +205,17 @@
             [alertNoConnection show];
             /*} else if (!appDel.serverIsOk) {
              alertNoConnection.message = @"Impossible to download content on the server because it is not reachable. The application will shut down. Sorry for the inconvenience. Please try later.";*/
-        } else if (!self.Menu.hidden) {
+        } else if (!self.Display.hidden) {
             //NSLog(@"Menu visible");
             if (appDel.isDownloadedByNetwork || appDel.isDownloadedByFile) {
                 if (APPLICATION_FILE != Nil) {
                 appDependencies = [APPLICATION_FILE objectForKey:@"Dependencies"];
                 allPages = [APPLICATION_FILE objectForKey:@"Pages"];
-                [self configureView];
+                    if (self.PageID) {
+                        [self configureDetails];
+                    } else {
+                        [self configureHome];
+                    }
                 }
             } else if (!appDel.isDownloadedByNetwork) {
                 //NSLog(@"Not downloaded by network");
@@ -238,14 +236,9 @@
         UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Application fails" message:errorMsg delegate:self cancelButtonTitle:@"Quit" otherButtonTitles:nil];
         [alertNoConnection show];
     }
-    @finally {
-        // Pas ok : pu d'event
-        //[[NSNotificationCenter defaultCenter] removeObserver:self name:@"ConflictualSituationNotification" object:nil];
-
-    }
 }
 
-- (void)configureView
+- (void)configureHome
 {
     // Update the user interface for the Menu item.
     @try {
@@ -274,11 +267,57 @@
                         @throw e;
                     }
                     
-                    [self.Menu loadHTMLString:content baseURL:url];
+                    [self.Display loadHTMLString:content baseURL:url];
                 }
                 else {
-                    [self.Menu loadHTMLString:[AppDelegate createHTMLwithContent:@"<center><font color='blue'>There is no content</font></center>" withAppDep:nil withPageDep:nil] baseURL:url];
+                    [self.Display loadHTMLString:[AppDelegate createHTMLwithContent:@"<center><font color='blue'>There is no content</font></center>" withAppDep:nil withPageDep:nil] baseURL:url];
                 }
+                self.navigationItem.title = [page objectForKey:@"Title"];
+            }
+        }
+    }
+    @catch (NSException *exception) {
+        errorMsg = [NSString stringWithFormat:@"An error occured during the Configuration of the view Menu : %@, reason : %@", exception.name, exception.reason];
+        UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Application fails" message:errorMsg delegate:self cancelButtonTitle:@"Quit" otherButtonTitles:nil];
+        [alertNoConnection show];
+    }
+}
+
+- (void) configureDetails
+{
+    @try {
+        for (NSMutableDictionary *page in allPages) {
+            
+            if ([[page objectForKey:@"Id"] isEqual:self.PageID]) {
+                // Get Page's Dependencies
+                if ([page objectForKey:@"Dependencies"] != [NSNull null]) {
+                    pageDependencies = [page objectForKey:@"Dependencies"];
+                }
+                NSURL *url = [NSURL fileURLWithPath:APPLICATION_SUPPORT_PATH isDirectory:YES];
+                // Load Content in the WebView
+                if ([page objectForKey:@"HtmlContent"] != [NSNull null]) {
+                    // Create HTML
+                    NSString *content = [AppDelegate createHTMLwithContent:[page objectForKey:@"HtmlContent"] withAppDep:appDependencies withPageDep:pageDependencies];
+                    // Save html content in file
+                    BOOL success = false;
+                    NSFileManager *fileManager = [NSFileManager defaultManager];
+                    NSError *error = [[NSError alloc] init];
+                    NSString *path = [NSString stringWithFormat:@"%@details.html", APPLICATION_SUPPORT_PATH];
+                    NSData *data = [content dataUsingEncoding:NSUTF8StringEncoding];
+                    success = [fileManager createFileAtPath:path contents:data attributes:nil];
+                    if (!success) {
+                        NSLog(@"An error occured during the Saving of the html file : %@", error);
+                        NSException *e = [NSException exceptionWithName:error.localizedDescription reason:error.localizedFailureReason userInfo:error.userInfo];
+                        @throw e;
+                    }
+                    // Load HTML
+                    [self.Display loadHTMLString:content baseURL:url];
+                }
+                else {
+                    [self.Display loadHTMLString:[AppDelegate createHTMLwithContent:@"<center><font color='blue'>There is no content</font></center>" withAppDep:nil withPageDep:nil] baseURL:url];
+                }
+                
+                // Set Page's title
                 self.navigationItem.title = [page objectForKey:@"Title"];
             }
         }
@@ -319,13 +358,12 @@
         // First loading
         return YES;
     } else if ([[request.URL relativePath] isEqualToString:[NSString stringWithFormat:@"%@index.html", APPLICATION_SUPPORT_PATH]]) {
-        self.navigationItem.title = @"Menu";
+        return YES;
+    } else if ([[request.URL relativePath] isEqualToString:[NSString stringWithFormat:@"%@details.html", APPLICATION_SUPPORT_PATH]]) {
         return YES;
     } else if ([request.URL query] != nil) {
-        self.showDetails = [self.storyboard instantiateViewControllerWithIdentifier:@"detailsView"];
-        self.showDetails.detailItem = [request.URL query];
-        [self.navigationController pushViewController:self.showDetails animated:YES];
-        return YES;
+        self.PageID = [request.URL query];
+        return NO;
     }
     return NO;
 }
@@ -334,7 +372,7 @@
 {
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
     errorMsg = [NSString stringWithFormat:@"<html><center><font size=+4 color='red'>An error occured :<br>%@</font></center></html>", error.localizedDescription];
-    [self.Menu loadHTMLString:[AppDelegate createHTMLwithContent:errorMsg withAppDep:nil withPageDep:nil] baseURL:nil];
+    [self.Display loadHTMLString:[AppDelegate createHTMLwithContent:errorMsg withAppDep:nil withPageDep:nil] baseURL:nil];
 }
 
 #pragma mark - Alert View
