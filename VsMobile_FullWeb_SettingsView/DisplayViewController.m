@@ -134,8 +134,8 @@
 - (void)viewDidLoad
 {
     @synchronized(self){
-    [super viewDidLoad];
-    
+        [super viewDidLoad];
+        
         // Do any additional setup after loading the view, typically from a nib.
         appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
         
@@ -152,8 +152,8 @@
         
         self.navigationItem.hidesBackButton = YES;
         self.navigationItem.title = self.whereWasI;
-    
-    [self.img setImage:[UIImage imageNamed:@"LaunchImage-700"]];
+        
+        [self.img setImage:[UIImage imageNamed:@"LaunchImage-700"]];
         
         for (UIView *v in [self.view subviews]) {
             if ([v isKindOfClass:[UIWebView class]]) {
@@ -162,7 +162,7 @@
                 self.imageI = [[self.view subviews] indexOfObject:v];
             }
         }
-    
+        
     if (self.isConflictual) {
         self.navigationItem.title = @"Conflictual situation";
         self.img.hidden = NO;
@@ -330,39 +330,22 @@
 #pragma mark - Web View
 - (void)webViewDidStartLoad:(UIWebView *)webView
 {
-    //[UIView transitionFromView:webView toView:self.img duration:0.5 options:UIViewAnimationOptionTransitionCrossDissolve completion:nil];
-    //[UIView transitionWithView:self.img duration:5.0 options:UIViewAnimationOptionTransitionCrossDissolve animations:nil completion:nil];
-    //Moche
-    //[UIView transitionWithView:self.img duration:5.0 options:UIViewAnimationOptionTransitionCurlDown animations:nil completion:nil];
-    //[UIView transitionWithView:self.img duration:5.0 options:UIViewAnimationOptionTransitionCurlUp animations:nil completion:nil];
-    //[UIView transitionWithView:self.img duration:5.0 options:UIViewAnimationOptionTransitionFlipFromBottom animations:nil completion:nil];
-    //[UIView transitionWithView:self.img duration:5.0 options:UIViewAnimationOptionTransitionFlipFromLeft animations:nil completion:nil];
-
-    // Disparait mais rien de chargé encore
-    //[UIView transitionWithView:webView duration:5.0 options:UIViewAnimationOptionTransitionCrossDissolve animations:^{[self webViewDidFinishLoad:webView];} completion:nil];
-    
     self.img.hidden = NO;
     self.Display.hidden = YES;
     self.Activity.hidden = NO;
     [self.Activity startAnimating];
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-    
-    //[UIView transitionWithView:self.img duration:5.0 options:UIViewAnimationOptionTransitionCrossDissolve animations:nil completion:nil];
-
 }
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
     self.whereWasI = self.navigationItem.title;
-    
-    //[UIView transitionWithView:webView duration:5.0 options:UIViewAnimationOptionTransitionCrossDissolve animations:nil completion:nil];
-    //[UIView transitionFromView:self.img toView:webView duration:2.0 options:UIViewAnimationOptionTransitionCrossDissolve completion:nil];
 
     [UIView beginAnimations:@"animationID" context:nil];
 	[UIView setAnimationDuration:2.0f];
 	[UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
 	[UIView setAnimationRepeatAutoreverses:NO];
     [UIView setAnimationTransition:UIViewAnimationTransitionCurlUp forView:self.view cache:YES];
-    [self.view exchangeSubviewAtIndex:2 withSubviewAtIndex:0];
+    [self.view exchangeSubviewAtIndex:self.webviewI withSubviewAtIndex:self.imageI];
 	[UIView commitAnimations];
     
     [self.Activity stopAnimating];
@@ -437,21 +420,6 @@
     } else if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"OK"]) {
         self.isConflictual = NO;
     }
-}
-
-- (void) setAnimationsInDirection:(Direction)direction
-{
-    [UIView beginAnimations:@"animationID" context:nil];
-	[UIView setAnimationDuration:2.0f];
-	[UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-	[UIView setAnimationRepeatAutoreverses:NO];
-    [UIView setAnimationTransition:UIViewAnimationTransitionCurlUp forView:self.view cache:YES];
-    if (direction == showImage) {
-        [self.view exchangeSubviewAtIndex:self.webviewI withSubviewAtIndex:self.imageI];
-    } else {
-        [self.view exchangeSubviewAtIndex:self.imageI withSubviewAtIndex:self.webviewI];
-    }
-	[UIView commitAnimations];
 }
 
 @end

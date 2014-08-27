@@ -18,10 +18,8 @@
 
 @property id PageID;
 
-@property (strong, nonatomic) NSArray *subviews;
 @property int webviewI;
 @property int imageI;
-typedef enum directionEnum {showImage, showWebview}Direction;
 
 @property (strong, nonatomic) UIAlertView *settingsDone;
 
