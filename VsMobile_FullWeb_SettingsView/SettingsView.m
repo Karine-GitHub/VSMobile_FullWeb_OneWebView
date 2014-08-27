@@ -35,6 +35,8 @@
     [super viewWillAppear:YES];
     appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
 
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureApp:) name:@"ConfigureAppNotification" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshApp:) name:@"RefreshAppNotification" object:nil];
 }
@@ -64,18 +66,11 @@
             [[NSNotificationCenter defaultCenter] postNotification:notif];
         }
 
-
     // Register settings
     NSNumber *cache = [NSNumber numberWithBool:self.cacheMode.isOn];
     NSNumber *roaming = [NSNumber numberWithBool:self.roamingMode.isOn];
     [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:cache forKey:@"cache"]];
     [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:roaming forKey:@"roaming"]];
-    
-    // Remove observers
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"ConfigureAppNotification" object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"RefreshAppNotification" object:nil];
-    
-
 }
 
 - (void)configureApp:(NSNotification *)notification {

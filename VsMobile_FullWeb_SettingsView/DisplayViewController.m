@@ -20,20 +20,12 @@
     NSMutableArray *allPages;
     NSMutableArray *appDependencies;
     NSMutableArray *pageDependencies;
-    int iSettingsModif;
-    int iNomodif;
-    int iConflit;
-    int iConfigureApp;
 }
 
 - (void)awakeFromNib {
     [super awakeFromNib];
 }
 - (IBAction)GoToSettings:(id)sender {
-    NSLog(@"SettingsModificationNotification : %d", iSettingsModif);
-    NSLog(@"NoModificationNotification : %d", iNomodif);
-    NSLog(@"ConflictualSituationNotification : %d", iConflit);
-    NSLog(@"ConfigureAppNotification : %d", iConfigureApp);
 
 }
 
@@ -43,20 +35,12 @@
     [super viewWillAppear:YES];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    iSettingsModif = 0;
-    iNomodif = 0;
-    iConflit = 0;
-    iConfigureApp = 0;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsDone:) name:@"SettingsModificationNotification" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsDone:) name:@"NoModificationNotification" object:nil];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(conflictIssue:) name:@"ConflictualSituationNotification" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureAppDone:) name:@"ConfigureAppNotification" object:nil];
-    NSLog(@"ADD SettingsModificationNotification : %d", ++iSettingsModif);
-    NSLog(@"ADD NoModificationNotification : %d", ++iNomodif);
-    NSLog(@"ADD ConflictualSituationNotification : %d", ++iConflit);
-    NSLog(@"ADD ConfigureAppNotification : %d", ++iConfigureApp);
 }
 
 
@@ -152,14 +136,32 @@
     @synchronized(self){
     [super viewDidLoad];
     
-	// Do any additional setup after loading the view, typically from a nib.
-    appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    
-    self.Display.delegate = self;
-    self.navigationItem.hidesBackButton = YES;
-    self.navigationItem.title = self.whereWasI;
+        // Do any additional setup after loading the view, typically from a nib.
+        appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+        
+        self.Display.delegate = self;
+        if ([[self.Display subviews] count] > 0) {
+            // hide the shadows
+            for (UIView* shadowView in [[[self.Display subviews] objectAtIndex:0] subviews]) {
+                [shadowView setHidden:YES];
+            }
+            // show the content
+            [[[[[self.Display subviews] objectAtIndex:0] subviews] lastObject] setHidden:NO];
+        }
+        self.Display.backgroundColor = [UIColor whiteColor];
+        
+        self.navigationItem.hidesBackButton = YES;
+        self.navigationItem.title = self.whereWasI;
     
     [self.img setImage:[UIImage imageNamed:@"LaunchImage-700"]];
+        
+        for (UIView *v in [self.view subviews]) {
+            if ([v isKindOfClass:[UIWebView class]]) {
+                self.webviewI = [[self.view subviews] indexOfObject:v];
+            } else if ([v isKindOfClass:[UIImage class]]) {
+                self.imageI = [[self.view subviews] indexOfObject:v];
+            }
+        }
     
     if (self.isConflictual) {
         self.navigationItem.title = @"Conflictual situation";
@@ -328,13 +330,47 @@
 #pragma mark - Web View
 - (void)webViewDidStartLoad:(UIWebView *)webView
 {
+    //[UIView transitionFromView:webView toView:self.img duration:0.5 options:UIViewAnimationOptionTransitionCrossDissolve completion:nil];
+    //[UIView transitionWithView:self.img duration:5.0 options:UIViewAnimationOptionTransitionCrossDissolve animations:nil completion:nil];
+    //Moche
+    //[UIView transitionWithView:self.img duration:5.0 options:UIViewAnimationOptionTransitionCurlDown animations:nil completion:nil];
+    //[UIView transitionWithView:self.img duration:5.0 options:UIViewAnimationOptionTransitionCurlUp animations:nil completion:nil];
+    //[UIView transitionWithView:self.img duration:5.0 options:UIViewAnimationOptionTransitionFlipFromBottom animations:nil completion:nil];
+    //[UIView transitionWithView:self.img duration:5.0 options:UIViewAnimationOptionTransitionFlipFromLeft animations:nil completion:nil];
+
+    // Disparait mais rien de chargé encore
+    //[UIView transitionWithView:webView duration:5.0 options:UIViewAnimationOptionTransitionCrossDissolve animations:^{[self webViewDidFinishLoad:webView];} completion:nil];
+    
+    self.img.hidden = NO;
+    self.Display.hidden = YES;
+    self.Activity.hidden = NO;
+    [self.Activity startAnimating];
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
     
+    //[UIView transitionWithView:self.img duration:5.0 options:UIViewAnimationOptionTransitionCrossDissolve animations:nil completion:nil];
+
 }
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
     self.whereWasI = self.navigationItem.title;
+    
+    //[UIView transitionWithView:webView duration:5.0 options:UIViewAnimationOptionTransitionCrossDissolve animations:nil completion:nil];
+    //[UIView transitionFromView:self.img toView:webView duration:2.0 options:UIViewAnimationOptionTransitionCrossDissolve completion:nil];
+
+    [UIView beginAnimations:@"animationID" context:nil];
+	[UIView setAnimationDuration:2.0f];
+	[UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+	[UIView setAnimationRepeatAutoreverses:NO];
+    [UIView setAnimationTransition:UIViewAnimationTransitionCurlUp forView:self.view cache:YES];
+    [self.view exchangeSubviewAtIndex:2 withSubviewAtIndex:0];
+	[UIView commitAnimations];
+    
+    [self.Activity stopAnimating];
+    self.Activity.hidden = YES;
+    self.img.hidden = YES;
+    self.Display.hidden = NO;
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    NSLog(@"IsLoading = %hhd", webView.isLoading);
 }
 
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
@@ -348,10 +384,11 @@
     
     int index = [APPLICATION_SUPPORT_PATH length] - 1;
     NSString *path = [APPLICATION_SUPPORT_PATH substringToIndex:index];
-    NSLog(@"Path modifié = %@", path);
+    //NSLog(@"Path modifié = %@", path);
     NSLog(@"Query = %@", [request.URL query]);
     NSLog(@"RelativePath = %@", [request.URL relativePath]);
-    
+    NSLog(@"Navigation type = %d", navigationType);
+
     if ([[request.URL relativePath] isEqualToString:path]) {
         // First loading
         return YES;
@@ -363,6 +400,8 @@
     } else if ([request.URL query] != nil) {
         self.PageID = [request.URL query];
         [self configureDetails];
+        return YES;
+    } else if (![request.URL relativePath] && ![request.URL query] && !self.PageID) {
         return YES;
     }
     return NO;
@@ -396,13 +435,23 @@
         [self.navigationController pushViewController:showSettings animated:YES];
 
     } else if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"OK"]) {
-        // This alertView need to reload the init
         self.isConflictual = NO;
-        //[self performSelectorOnMainThread:@selector(viewDidLoad) withObject:self waitUntilDone:YES];
-
-        [self initApp];
     }
-    
+}
+
+- (void) setAnimationsInDirection:(Direction)direction
+{
+    [UIView beginAnimations:@"animationID" context:nil];
+	[UIView setAnimationDuration:2.0f];
+	[UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+	[UIView setAnimationRepeatAutoreverses:NO];
+    [UIView setAnimationTransition:UIViewAnimationTransitionCurlUp forView:self.view cache:YES];
+    if (direction == showImage) {
+        [self.view exchangeSubviewAtIndex:self.webviewI withSubviewAtIndex:self.imageI];
+    } else {
+        [self.view exchangeSubviewAtIndex:self.imageI withSubviewAtIndex:self.webviewI];
+    }
+	[UIView commitAnimations];
 }
 
 @end

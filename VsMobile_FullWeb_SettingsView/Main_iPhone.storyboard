@@ -52,6 +52,10 @@
                                 <rect key="frame" x="0.0" y="0.0" width="326" height="425"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="vlO-MZ-CXo">
+                                <rect key="frame" x="150" y="203" width="37" height="37"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
@@ -60,6 +64,7 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <size key="freeformSize" width="320" height="568"/>
                     <connections>
+                        <outlet property="Activity" destination="vlO-MZ-CXo" id="DoS-RY-0G5"/>
                         <outlet property="Display" destination="UND-tu-cLY" id="uYe-Yh-vdu"/>
                         <outlet property="Settings" destination="p6R-64-Ew0" id="YsD-5S-k0s"/>
                         <outlet property="img" destination="DyL-nI-ylO" id="cSd-1z-VZY"/>

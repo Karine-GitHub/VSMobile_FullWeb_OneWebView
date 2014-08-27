@@ -14,8 +14,14 @@
 @property (weak, nonatomic) IBOutlet UIWebView *Display;
 @property (weak, nonatomic) IBOutlet UIButton *Settings;
 @property (strong, nonatomic) IBOutlet UIImageView *img;
+@property (strong, nonatomic) IBOutlet UIActivityIndicatorView *Activity;
 
 @property id PageID;
+
+@property (strong, nonatomic) NSArray *subviews;
+@property int webviewI;
+@property int imageI;
+typedef enum directionEnum {showImage, showWebview}Direction;
 
 @property (strong, nonatomic) UIAlertView *settingsDone;
 
