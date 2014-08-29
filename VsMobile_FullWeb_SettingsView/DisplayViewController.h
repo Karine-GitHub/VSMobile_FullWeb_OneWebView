@@ -24,8 +24,9 @@
 @property (strong, nonatomic) UIAlertView *settingsDone;
 
 @property (strong,nonatomic) NSString *whereWasI;
+@property (strong, nonatomic) NSString *lastPath;
 
-@property BOOL needReloadApp;
 @property BOOL isConflictual;
+@property NSTimer *backgroundTimer;
 
 @end

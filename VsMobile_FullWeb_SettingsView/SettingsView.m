@@ -26,17 +26,17 @@
     return self;
 }
 
-/* Add observer on : 
-    - the method configureApp of AppDelegate Class : it is called in background during the loading of datas. Necessary for refreshing datas & images size.
-    - when RefreshSettings view will disapear for saving user choice 
-*/
+/* Add observer on :
+ - the method configureApp of AppDelegate Class : it is called in background during the loading of datas. Necessary for refreshing datas & images size.
+ - when RefreshSettings view will disapear for saving user choice
+ */
 - (void) viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:YES];
     appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-
+    
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-
+    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureApp:) name:@"ConfigureAppNotification" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshApp:) name:@"RefreshAppNotification" object:nil];
 }
@@ -45,27 +45,29 @@
 {
     [super viewWillDisappear:YES];
     // Refresh Cache Mode & Roaming Mode (not always refresh because not necessary passed in ViewDidLoad)
-    [appDel setCacheIsEnabled:self.cacheMode.isOn];
-    [appDel setRoamingIsEnabled:self.roamingMode.isOn];
-
+    @synchronized(self){
+        cacheIsEnabled = self.cacheMode.isOn;
+        roamingIsEnabled = self.roamingMode.isOn;
+    }
+    
     // Notify that settings was modified
     // Si les settings sont bloquants : cas Cache Mode + cache = Oko, RoamingSituation + RoamingDisable => Event Conflictual Situation
     // sinon Event Settings is Finished
-        float size = [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue];
-        if (self.cacheMode.isOn && size == 0.0) {
-            NSNotification * notif = [NSNotification notificationWithName:@"ConflictualSituationNotification" object:self];
-            [[NSNotificationCenter defaultCenter] postNotification:notif];
-        } else if (appDel.roamingSituation && !self.roamingMode.isOn){
-            NSNotification * notif = [NSNotification notificationWithName:@"ConflictualSituationNotification" object:self];
-            [[NSNotificationCenter defaultCenter] postNotification:notif];
-        } else if (self.reconfigNecessary) {
-            NSNotification * notif = [NSNotification notificationWithName:@"SettingsModificationNotification" object:self];
-            [[NSNotificationCenter defaultCenter] postNotification:notif];
-        } else {
-            NSNotification * notif = [NSNotification notificationWithName:@"NoModificationNotification" object:self];
-            [[NSNotificationCenter defaultCenter] postNotification:notif];
-        }
-
+    float size = [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue];
+    if (self.cacheMode.isOn && size == 0.0) {
+        NSNotification * notif = [NSNotification notificationWithName:@"ConflictualSituationNotification" object:self];
+        [[NSNotificationCenter defaultCenter] postNotification:notif];
+    } else if (appDel.roamingSituation && !self.roamingMode.isOn){
+        NSNotification * notif = [NSNotification notificationWithName:@"ConflictualSituationNotification" object:self];
+        [[NSNotificationCenter defaultCenter] postNotification:notif];
+    } else if (self.reconfigNecessary) {
+        NSNotification * notif = [NSNotification notificationWithName:@"SettingsModificationNotification" object:self];
+        [[NSNotificationCenter defaultCenter] postNotification:notif];
+    } else {
+        NSNotification * notif = [NSNotification notificationWithName:@"NoModificationNotification" object:self];
+        [[NSNotificationCenter defaultCenter] postNotification:notif];
+    }
+    
     // Register settings
     NSNumber *cache = [NSNumber numberWithBool:self.cacheMode.isOn];
     NSNumber *roaming = [NSNumber numberWithBool:self.roamingMode.isOn];
@@ -79,22 +81,20 @@
     if ([self.navigationController.visibleViewController isKindOfClass:[SettingsView class]])
     {
         self.reconfigNecessary = NO;
-        [NSThread sleepForTimeInterval:2.0];
+        [NSThread sleepForTimeInterval:3.0];
+        // Set Datas & Images Sizes
+        self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
+        self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];        
         // Alert user that downloading is finished
         self.errorMsg = [NSString stringWithFormat:@"The downloading of files is done."];
         UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Downloading Successful" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [alertNoConnection show];
-        // Set Datas & Images Sizes
-        
-        self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
-        self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        //[alertNoConnection show];
+        [alertNoConnection performSelectorOnMainThread:@selector(show) withObject:self waitUntilDone:YES];
     }
 }
 - (void)refreshApp:(NSNotification *)notification {
     // Set RefreshChoice text when RefreshSettingsView disapear
-    NSLog(@"Interval = %@", [[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"]);
-    NSLog(@"Duration = %@", [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]);
     
     char plural = [[[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"] characterAtIndex:[[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"].length -1];
     
@@ -105,7 +105,6 @@
         self.refreshValue = [NSString stringWithFormat:@"%@ %@", [[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"], [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]];
     }
     
-    NSLog(@"Value = %@", self.refreshValue);
     if (![self.refreshChoice.text isEqualToString:self.refreshValue]) {
         self.reconfigNecessary = YES;
     }
@@ -117,12 +116,19 @@
     [super viewDidLoad];
     self.navigationItem.backBarButtonItem.title = @"OK";
     self.reconfigNecessary = NO;
-
+    
     self.SettingsTable.delegate = self;
     
     // Set RefreshChoice text
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]) {
-        self.refreshValue = [NSString stringWithFormat:@"%@ %@", [[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"], [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]];
+        char plural = [[[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"] characterAtIndex:[[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"].length -1];
+        
+        if ([[NSUserDefaults standardUserDefaults] integerForKey:@"intervalChoice"] > 1 && plural != 's') {
+            NSString *pluriel = [NSString stringWithFormat:@"%@s", [[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"]];
+            self.refreshValue = [NSString stringWithFormat:@"%@ %@", [[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"], pluriel];
+        } else {
+            self.refreshValue = [NSString stringWithFormat:@"%@ %@", [[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"], [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]];
+        }
     } else {
         self.refreshValue = @"1 jour";
     }
@@ -140,7 +146,6 @@
     } else {
         [self.cacheMode setOn:NO];
     }
-    [appDel setCacheIsEnabled:self.cacheMode.isOn];
     
     // Set Roaming Mode
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"roaming"]) {
@@ -148,8 +153,11 @@
     } else {
         [self.roamingMode setOn:YES];
     }
-    [appDel setRoamingIsEnabled:self.roamingMode.isOn];
-
+    @synchronized(self) {
+        cacheIsEnabled = self.cacheMode.isOn;
+        roamingIsEnabled = self.roamingMode.isOn;
+    }
+    
 }
 
 - (void)didReceiveMemoryWarning
@@ -159,80 +167,78 @@
 }
 
 - (IBAction)cacheModeValueChanged:(id)sender {
-    [appDel setCacheIsEnabled:self.cacheMode.isOn];
-    self.reconfigNecessary = YES;
+    @synchronized(self){
+        cacheIsEnabled = self.cacheMode.isOn;
+        self.reconfigNecessary = YES;
+    }
 }
 
 - (IBAction)roamingValueChanged:(id)sender {
-    [appDel setRoamingIsEnabled:self.roamingMode.isOn];
-    self.reconfigNecessary = YES;
-    // TODO : Check iPhone setup for roaming
+    @synchronized(self){
+        roamingIsEnabled = self.roamingMode.isOn;
+        self.reconfigNecessary = YES;
+    }
 }
 
 - (IBAction)dataLoadingClick:(id)sender {
-    NSLog(@"Click Loading");
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-    self.reconfigNecessary = YES;
-
-    // Download all
-    @try {
-        [appDel setForceDownloading:YES];
-        [appDel performSelectorInBackground:@selector(configureApp) withObject:appDel];
-    }
-    @catch (NSException *exception) {
-        if (appDel.cacheIsEnabled) {
-            self.errorMsg = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Please turn it off.";
-        } else if (!appDel.isDownloadedByNetwork) {
-            self.errorMsg = @"Impossible to download content on the server. The network connection is too low or off. Please try later.";
+    @synchronized(self){
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+        self.reconfigNecessary = YES;
+        // Download all
+        @try {
+            forceDownloading = YES;
+            [appDel performSelectorInBackground:@selector(configureApp) withObject:appDel];
         }
-        UIAlertView *alertLoadingFail = [[UIAlertView alloc] initWithTitle:@"Downloading fails" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [alertLoadingFail show];
-    }
-    @finally {
-        [appDel setForceDownloading:NO];
-
+        @catch (NSException *exception) {
+            if (cacheIsEnabled) {
+                self.errorMsg = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Please turn it off.";
+            } else if (!appDel.isDownloadedByNetwork) {
+                self.errorMsg = @"Impossible to download content on the server. The network connection is too low or off. Please try later.";
+            }
+            UIAlertView *alertLoadingFail = [[UIAlertView alloc] initWithTitle:@"Downloading fails" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alertLoadingFail show];
+        }
     }
 }
 
 - (IBAction)deleteCacheClick:(id)sender {
-    NSLog(@"Click Delete");
-
-    @try {
-        NSFileManager *fm = [NSFileManager defaultManager];
-        
-        if ([fm contentsOfDirectoryAtPath:APPLICATION_SUPPORT_PATH error:nil].count > 0) {
-            NSError *err = nil;
-            for (NSString *file in [fm contentsOfDirectoryAtPath:APPLICATION_SUPPORT_PATH error:&err]) {
-                [fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, file] error:&err];
-            }
-            if (err) {
-                // TODO : throw exception
-                NSLog(@"An error occured during the Deleting of cache : %@", err);
-                NSException *e = [NSException exceptionWithName:err.localizedDescription reason:err.localizedFailureReason userInfo:err.userInfo];
-                @throw e;
-            }
-            self.errorMsg = [NSString stringWithFormat:@"The deleting of files is done."];
-            UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Deleting Successful" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-            [alertNoConnection show];
+    @synchronized(self){
+        @try {
+            NSFileManager *fm = [NSFileManager defaultManager];
             
+            if ([fm contentsOfDirectoryAtPath:APPLICATION_SUPPORT_PATH error:nil].count > 0) {
+                NSError *err = nil;
+                for (NSString *file in [fm contentsOfDirectoryAtPath:APPLICATION_SUPPORT_PATH error:&err]) {
+                    [fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, file] error:&err];
+                }
+                if (err) {
+                    // TODO : throw exception
+                    NSLog(@"An error occured during the Deleting of cache : %@", err);
+                    NSException *e = [NSException exceptionWithName:err.localizedDescription reason:err.localizedFailureReason userInfo:err.userInfo];
+                    @throw e;
+                }
+                self.errorMsg = [NSString stringWithFormat:@"The deleting of files is done."];
+                UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Deleting Successful" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                [alertNoConnection show];
+                
+            } else {
+                self.errorMsg = [NSString stringWithFormat:@"The cache is already cleaned."];
+                UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Deleting Not Necessary" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                [alertNoConnection show];
+            }
         }
-        else {
-            self.errorMsg = [NSString stringWithFormat:@"The cache is already cleaned."];
-            UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Deleting Not Necessary" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        @catch (NSException *e) {
+            // TODO : alertView pour informer de l'erreur
+            self.errorMsg = [NSString stringWithFormat:@"An error occured during the Deleting of cache : %@, reason : %@", e.name, e.reason];
+            UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"An Error Occured" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
             [alertNoConnection show];
         }
-    }
-    @catch (NSException *e) {
-        // TODO : alertView pour informer de l'erreur
-        self.errorMsg = [NSString stringWithFormat:@"An error occured during the Deleting of cache : %@, reason : %@", e.name, e.reason];
-        UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"An Error Occured" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [alertNoConnection show];
-    }
-    @finally {
-        self.reconfigNecessary = YES;
-        // Refresh dataSize & imagesSize
-        self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
-        self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
+        @finally {
+            self.reconfigNecessary = YES;
+            // Refresh dataSize & imagesSize
+            self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
+            self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
+        }
     }
 }
 
@@ -256,7 +262,7 @@
             return 20.0f;
             break;
     }
-
+    
 }
 
 - (UIView *) tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
@@ -266,8 +272,8 @@
     sectionFooterLabel.font = [UIFont fontWithName:@"Helvetica" size:13.0];
     sectionFooterLabel.textColor = [UIColor grayColor];
     sectionFooterLabel.numberOfLines = 5;
-        [sectionFooterView addSubview:sectionFooterLabel];
-
+    [sectionFooterView addSubview:sectionFooterLabel];
+    
     switch (section) {
         case 2:
             sectionFooterLabel.text = @"Attention ! Le chargement de toutes les données peut prendre du temps et l'application sera indisponible pendant le chargement.";

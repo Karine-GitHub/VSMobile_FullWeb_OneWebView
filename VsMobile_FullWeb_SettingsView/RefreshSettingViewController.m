@@ -26,8 +26,6 @@
 - (void) viewWillDisappear:(BOOL)animated
 {
     // Save user choice
-    NSLog(@"[viewWillDisappear] Interval = %@", self.intervalChoice);
-    NSLog(@"[viewWillDisappear] Duration = %@", self.durationChoice);
     [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.intervalChoice forKey:@"intervalChoice"]];
     [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.durationChoice forKey:@"durationChoice"]];
     // Notify that  choice is done
@@ -38,6 +36,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+
     // Do any additional setup after loading the view.
     self.durationValues = [[NSMutableArray alloc] initWithObjects:@"heure", @"jour", nil];
     
@@ -59,13 +58,10 @@
         } else {
             self.durationChoice = [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"];
         }
-        NSLog(@"[ViewDidLoad] Interval = %@", self.intervalChoice);
-        NSLog(@"[ViewDidLoad] Duration = %@", self.durationChoice);
-        // Use directly throw an exception NSRangeException => Must be passed by int variables
-        int iInterval = [self.intervalValues indexOfObject:self.intervalChoice];
+
         int iDuration = [self.durationValues indexOfObject:self.durationChoice];
         
-        [self.refresh selectRow:iInterval inComponent:0 animated:YES];
+        [self.refresh selectRow:[self.intervalChoice integerValue]-1 inComponent:0 animated:YES];
         [self.refresh selectRow:iDuration inComponent:1 animated:YES];
         
         // Default values : 1 day
@@ -94,14 +90,13 @@
 
 - (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component
 {
-    if ([self.intervalChoice intValue] > 1) {
+    if ([self.intervalChoice integerValue] > 1) {
         [self.durationValues replaceObjectAtIndex:0 withObject:@"heures"];
         [self.durationValues replaceObjectAtIndex:1 withObject:@"jours"];
     } else {
         [self.durationValues replaceObjectAtIndex:0 withObject:@"heure"];
         [self.durationValues replaceObjectAtIndex:1 withObject:@"jour"];
     }
-    //[pickerView reloadComponent:1];
     if (component == 0) {
         return [self.intervalValues objectAtIndex:row];
     } else {

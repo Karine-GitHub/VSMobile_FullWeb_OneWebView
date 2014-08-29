@@ -62,8 +62,6 @@
 		84C7165A199CCF3300E023E1 /* 20-gear2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "20-gear2.png"; sourceTree = "<group>"; };
 		84C7165B199CCF3300E023E1 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		84C7165C199CCF3300E023E1 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		84C71662199CCF3300E023E1 /* DetailsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DetailsViewController.h; sourceTree = "<group>"; };
-		84C71663199CCF3400E023E1 /* DetailsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DetailsViewController.m; sourceTree = "<group>"; };
 		84C71664199CCF3400E023E1 /* DisplayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DisplayViewController.h; sourceTree = "<group>"; };
 		84C71665199CCF3400E023E1 /* DisplayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DisplayViewController.m; sourceTree = "<group>"; };
 		84C71666199CCF3400E023E1 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
@@ -147,8 +145,6 @@
 				84C7165A199CCF3300E023E1 /* 20-gear2.png */,
 				84C7165B199CCF3300E023E1 /* AppDelegate.h */,
 				84C7165C199CCF3300E023E1 /* AppDelegate.m */,
-				84C71662199CCF3300E023E1 /* DetailsViewController.h */,
-				84C71663199CCF3400E023E1 /* DetailsViewController.m */,
 				84C71664199CCF3400E023E1 /* DisplayViewController.h */,
 				84C71665199CCF3400E023E1 /* DisplayViewController.m */,
 				84C71666199CCF3400E023E1 /* Reachability.h */,
@@ -241,6 +237,11 @@
 				TargetAttributes = {
 					84C71627199CCEE000E023E1 = {
 						DevelopmentTeam = 3BZ9RQY6AQ;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 					84C71642199CCEE000E023E1 = {
 						TestTargetID = 84C71627199CCEE000E023E1;

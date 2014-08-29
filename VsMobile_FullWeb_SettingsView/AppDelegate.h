@@ -17,6 +17,10 @@ extern NSData *FEED_FILE;
 // END GLOBAL VARIABLES
 
 extern NSString *APPLICATION_SUPPORT_PATH;
+extern BOOL forceDownloading;
+extern BOOL reloadApp;
+extern BOOL cacheIsEnabled;
+extern BOOL roamingIsEnabled;
 
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
@@ -25,13 +29,10 @@ extern NSString *APPLICATION_SUPPORT_PATH;
 @property (strong, nonatomic) NSData *applicationDatas;
 
 // Settings
-@property BOOL cacheIsEnabled;
-@property BOOL roamingIsEnabled;
 @property BOOL roamingSituation;
-@property NSInteger *refreshInterval;
+@property NSNumber *refreshInterval;
 @property NSString *refreshDuration;
-@property BOOL forceDownloading;
-@property BOOL reloadApp;
+@property NSDate *downloadDate;
 
 // Used for checking if downloading is OK (differentiation for setting an appropriate error message)
 @property BOOL serverIsOk;
@@ -46,7 +47,6 @@ extern NSString *APPLICATION_SUPPORT_PATH;
 - (void) configureApp;
 - (BOOL) testConnection;
 - (BOOL) testFastConnection;
-- (void) registerDefaultsFromSettingsBundle;
 + (NSNumber *) getSizeOf:(NSString *)path;
 + (NSMutableString *) addFiles:(NSArray *)dependencies;
 + (NSString *)createHTMLwithContent:(NSString *)htmlContent withAppDep:(NSArray *)appDep withPageDep:(NSArray *)pageDep;

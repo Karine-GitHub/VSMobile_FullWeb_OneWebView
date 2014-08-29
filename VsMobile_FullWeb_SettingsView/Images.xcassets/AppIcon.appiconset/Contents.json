@@ -3,7 +3,7 @@
     {
       "size" : "29x29",
       "idiom" : "iphone",
-      "filename" : "5482.png",
+      "filename" : "AppIcon58.png",
       "scale" : "2x"
     },
     {
@@ -14,7 +14,7 @@
     {
       "size" : "60x60",
       "idiom" : "iphone",
-      "filename" : "5482-1.png",
+      "filename" : "AppIcon120.png",
       "scale" : "2x"
     },
     {
@@ -40,13 +40,13 @@
     {
       "size" : "76x76",
       "idiom" : "ipad",
-      "filename" : "5482-2.png",
+      "filename" : "AppIcon76.png",
       "scale" : "1x"
     },
     {
       "size" : "76x76",
       "idiom" : "ipad",
-      "filename" : "5482-3.png",
+      "filename" : "AppIcon152.png",
       "scale" : "2x"
     }
   ],

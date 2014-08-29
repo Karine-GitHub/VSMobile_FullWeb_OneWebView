@@ -11,6 +11,11 @@
 NSDictionary *APPLICATION_FILE;
 NSData *FEED_FILE;
 NSString *APPLICATION_SUPPORT_PATH;
+BOOL autoRefresh;
+BOOL forceDownloading;
+BOOL reloadApp;
+BOOL cacheIsEnabled;
+BOOL roamingIsEnabled;
 
 // INFO : not manually throw exception here => cannot display alert view before shut down the application. More user friendly.
 
@@ -24,29 +29,29 @@ NSString *APPLICATION_SUPPORT_PATH;
     
     
     BOOL isConnected = false;
-        switch (networkStatus) {
-            case NotReachable:
-                //NSLog(@"Network Status : NotReachable");
-                isConnected = false;
-                break;
-            case ReachableViaWiFi:
-                //NSLog(@"Network Status : ReachableViaWiFi");
-                isConnected = true;
-                break;
-            case ReachableViaWWAN:
-                //NSLog(@"Network Status : ReachableViaWWAN");
-                isConnected = [self testFastConnection];
-                break;
-            default:
-                break;
-        }
+    switch (networkStatus) {
+        case NotReachable:
+            //NSLog(@"Network Status : NotReachable");
+            isConnected = false;
+            break;
+        case ReachableViaWiFi:
+            //NSLog(@"Network Status : ReachableViaWiFi");
+            isConnected = true;
+            break;
+        case ReachableViaWWAN:
+            //NSLog(@"Network Status : ReachableViaWWAN");
+            isConnected = [self testFastConnection];
+            break;
+        default:
+            break;
+    }
     
     /*checkConnection = [Reachability reachabilityWithHostName:@"testapp"];
-    networkStatus = [checkConnection currentReachabilityStatus];
-    if (networkStatus != 0) {
-        self.serverIsOk = true;
-    }
-    NSLog(@"Server responsive : %hhd", self.serverIsOk); */
+     networkStatus = [checkConnection currentReachabilityStatus];
+     if (networkStatus != 0) {
+     self.serverIsOk = true;
+     }
+     NSLog(@"Server responsive : %hhd", self.serverIsOk); */
     
     return isConnected;
 }
@@ -66,51 +71,18 @@ NSString *APPLICATION_SUPPORT_PATH;
     return isFast;
 }
 
-// Register custom settings is necessary for accessing them. Set Version item dynamically.
-- (void) registerDefaultsFromSettingsBundle
-{
-    // Get Version number
-    NSString *versionNumber = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
-    //Get Settings.Bundle
-    NSString *settingsBundle = [[NSBundle mainBundle] pathForResource:@"Settings" ofType:@"bundle"];
-    if (settingsBundle) {
-        // Get Root.plist file
-        NSDictionary *allPref = [NSDictionary dictionaryWithContentsOfFile:[settingsBundle stringByAppendingPathComponent:@"Root.plist"]];
-        // Get the Preferences Array
-        NSArray *prefArray = [allPref objectForKey:@"PreferenceSpecifiers"];
-        // Get all key/value pairs
-        NSMutableArray *modifiedPairs = [[NSMutableArray alloc] init];
-        for (NSDictionary *preference in prefArray) {
-            // Set Version value
-            if ([[preference objectForKey:@"DefaultValue"] isEqual:@"dynamicVersion"]) {
-                [preference setValue:versionNumber forKey:@"DefaultValue"];
-            }
-            [modifiedPairs addObject:preference];
-            // Choose items to put in Userdefaults : easiest to find by Identifier than DefaultValue
-            if ([preference objectForKey:@"Key"]) {
-                NSLog(@"Key: %@   Value: %@", [preference objectForKey:@"Key"], [preference valueForKey:@"DefaultValue"]);
-                [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:[preference valueForKey:@"DefaultValue"] forKey:[preference objectForKey:@"Key"]]];
-            }
-        }
-        // Programatically modify the Root.plist file for saving Version Number
-        [allPref setValue:modifiedPairs forKey:@"PreferenceSpecifiers"];
-        NSFileManager *fm = [NSFileManager defaultManager];
-        [fm createFileAtPath:[settingsBundle stringByAppendingPathComponent:@"Root.plist"] contents:(NSData *)allPref attributes:nil];
-    }
-}
-
 - (void) getSettings
 {
     // If key exists, get its value else set a default value
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"cache"]) {
-        self.cacheIsEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"cache"];
+        cacheIsEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"cache"];
     } else {
-        self.cacheIsEnabled = false;
+        cacheIsEnabled = false;
     }
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"roaming"]) {
-        self.roamingIsEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"roaming"];
+        roamingIsEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"roaming"];
     } else {
-        self.roamingIsEnabled = true;
+        roamingIsEnabled = true;
     }
     // Check if user can be in Roaming mode
     NSString *carrierPlist = @"/var/mobile/Library/Preferences/com.apple.carrier.plist";
@@ -130,15 +102,24 @@ NSString *APPLICATION_SUPPORT_PATH;
     if (result == NSOrderedSame) {
         self.roamingSituation = NO;
     } else {
-         self.roamingSituation = YES;
+        self.roamingSituation = YES;
     }
     
+    @synchronized(self) {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]) {
-        self.refreshInterval = (NSInteger *)[[NSUserDefaults standardUserDefaults] integerForKey:@"intervalChoice"];
-        self.refreshDuration = [[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"];
+        // Check if change
+        if (self.refreshInterval != [NSNumber numberWithInt:[[NSUserDefaults standardUserDefaults] integerForKey:@"intervalChoice"]]
+            || self.refreshDuration != [[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"]) {
+            self.refreshInterval = [NSNumber numberWithInt:[[NSUserDefaults standardUserDefaults] integerForKey:@"intervalChoice"]];
+            self.refreshDuration = [[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"];
+        }
     } else {
-        self.refreshInterval = Nil;
-        self.refreshDuration = Nil;
+        self.refreshInterval = [NSNumber numberWithInt:1];
+        self.refreshDuration = @"jour";
+        
+        [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.refreshInterval forKey:@"intervalChoice"]];
+        [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.refreshDuration forKey:@"durationChoice"]];
+    }
     }
 }
 
@@ -204,13 +185,13 @@ NSString *APPLICATION_SUPPORT_PATH;
                     // Several directories
                     NSString *firstDir = [dirName substringToIndex:getDir.location];
                     NSString *sndDir = [dirName substringFromIndex:getDir.location];
-                    if (![fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, firstDir] isDirectory:&isDirectory] || self.forceDownloading) {
+                    if (![fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, firstDir] isDirectory:&isDirectory] || forceDownloading || autoRefresh) {
                         success = [fileManager createDirectoryAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, firstDir] withIntermediateDirectories:YES attributes:nil error:&error];
                         if (!success) {
                             NSLog(@"An error occured during the Creation of Template folder : %@", error);
                         }
                         else {
-                            if (![fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@%@%@", APPLICATION_SUPPORT_PATH, firstDir, sndDir] isDirectory:&isDirectory]) {
+                            if (![fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@%@%@", APPLICATION_SUPPORT_PATH, firstDir, sndDir] isDirectory:&isDirectory] || forceDownloading || autoRefresh) {
                                 success = [fileManager createDirectoryAtPath:[NSString stringWithFormat:@"%@%@%@", APPLICATION_SUPPORT_PATH, firstDir, sndDir] withIntermediateDirectories:YES attributes:nil error:&error];
                                 if (!success) {
                                     NSLog(@"An error occured during the Creation of Template folder : %@", error);
@@ -222,7 +203,7 @@ NSString *APPLICATION_SUPPORT_PATH;
                 } else {
                     // Only one directory
                     path = [NSString stringWithFormat:@"%@%@/%@", APPLICATION_SUPPORT_PATH, dirName, fileName];
-                    if (![fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, dirName] isDirectory:&isDirectory] || self.forceDownloading) {
+                    if (![fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, dirName] isDirectory:&isDirectory] || forceDownloading || autoRefresh) {
                         success = [fileManager createDirectoryAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, dirName] withIntermediateDirectories:YES attributes:nil error:&error];
                         if (!success) {
                             NSLog(@"An error occured during the Creation of Template folder : %@", error);
@@ -232,13 +213,13 @@ NSString *APPLICATION_SUPPORT_PATH;
             }
             // Download file if necessary
             NSURL *location = [NSURL URLWithString:url];
-            if (![fileManager fileExistsAtPath:path] || self.forceDownloading) {
-                if (!self.cacheIsEnabled) {
+            if (![fileManager fileExistsAtPath:path] || forceDownloading || autoRefresh) {
+                if (!cacheIsEnabled) {
                     // Check if user is currently in Roaming Case
                     if (self.roamingSituation) {
                         
                         // Check if user enable Roaming for our app
-                        if (self.roamingIsEnabled) {
+                        if (roamingIsEnabled) {
                             
                             success = [self testConnection];
                             if (success) {
@@ -320,60 +301,72 @@ NSString *APPLICATION_SUPPORT_PATH;
     @synchronized(self) {
         self.downloadIsFinished = NO;
 #pragma Create the Application Support Folder. Not accessible by users
-    // NSHomeDirectory returns the application's sandbox directory. Application Support folder will contain all files that we need for the application
-    APPLICATION_SUPPORT_PATH = [NSString stringWithFormat:@"%@/Library/Application Support/", NSHomeDirectory()];
-    NSLog(@"APPLICATION_SUPPORT_PATH = %@", APPLICATION_SUPPORT_PATH);
-    
-    // Application Support folder is not always created by default. The following code creates it.
-    // Get the Bundle identifier for creating dynamic path for storing all files
-    NSString *bundle = [[NSBundle mainBundle] bundleIdentifier];
-    // FileManager is using for creating the Application Support Folder
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSError *error = [[NSError alloc] init];
-    NSURL *appliSupportDir = [fileManager URLForDirectory:NSApplicationSupportDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error];
-    if (appliSupportDir != nil) {
-        [appliSupportDir URLByAppendingPathComponent:bundle isDirectory:YES];
-    }
-    else {
-        NSLog(@"An error occured during the Creation of Application Support folder : %@", error);
-    }
-    
-    [self getSettings];
-    
-    bundle = [[NSBundle mainBundle] pathForResource:@"Configuration" ofType:@"plist"];
-    NSDictionary *config = [[NSDictionary alloc] initWithContentsOfFile:bundle];
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-        self.deviceType = @"Tablet";
-    } else {
-        self.deviceType = @"Mobile";
-    }
-    self.OS = @"IOS";
-    
+        // NSHomeDirectory returns the application's sandbox directory. Application Support folder will contain all files that we need for the application
+        APPLICATION_SUPPORT_PATH = [NSString stringWithFormat:@"%@/Library/Application Support/", NSHomeDirectory()];
+        NSLog(@"APPLICATION_SUPPORT_PATH = %@", APPLICATION_SUPPORT_PATH);
+        
+        // Application Support folder is not always created by default. The following code creates it.
+        // Get the Bundle identifier for creating dynamic path for storing all files
+        NSString *bundle = [[NSBundle mainBundle] bundleIdentifier];
+        // FileManager is using for creating the Application Support Folder
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSError *error = [[NSError alloc] init];
+        NSURL *appliSupportDir = [fileManager URLForDirectory:NSApplicationSupportDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error];
+        if (appliSupportDir != nil) {
+            [appliSupportDir URLByAppendingPathComponent:bundle isDirectory:YES];
+        }
+        else {
+            NSLog(@"An error occured during the Creation of Application Support folder : %@", error);
+        }
+        
+        [self getSettings];
+        
+        bundle = [[NSBundle mainBundle] pathForResource:@"Configuration" ofType:@"plist"];
+        NSDictionary *config = [[NSDictionary alloc] initWithContentsOfFile:bundle];
+        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+            self.deviceType = @"Tablet";
+        } else {
+            self.deviceType = @"Mobile";
+        }
+        self.OS = @"IOS";
+        
 #pragma Download & save Json Files
-    // Read Json file in network
-    @try {
-        BOOL success = false;
-        // Get Application File
-        // Get config file
-        //NSString *query = [NSString stringWithFormat:@"?key1=%@&key2=%@", self.OS, self.deviceType];
-        //NSString *webApi = [NSString stringWithFormat:@"%@%@%@", [config objectForKey:@"WebAPI"], [config objectForKey:@"ApplicationID"], query];
-        
-        NSString *webApi = [NSString stringWithFormat:@"%@%@", [config objectForKey:@"WebAPI"], [config objectForKey:@"ApplicationID"]];
-        NSURL *url = [NSURL URLWithString:webApi];
-        
-        NSString *path = [NSString stringWithFormat:@"%@%@.json", APPLICATION_SUPPORT_PATH, [config objectForKey:@"ApplicationID"]];
-        if (![fileManager fileExistsAtPath:path] || self.forceDownloading) {
-            //NSLog(@"File does not exist or self.forceDownloading is true");
-            // Check Connection if cache is not enabled
-            if (!self.cacheIsEnabled) {
-                
-                // Check if user is currently in Roaming Case
-                if (self.roamingSituation) {
+        // Read Json file in network
+        @try {
+            BOOL success = false;
+            // Get Application File
+            // Get config file
+            //NSString *query = [NSString stringWithFormat:@"?key1=%@&key2=%@", self.OS, self.deviceType];
+            //NSString *webApi = [NSString stringWithFormat:@"%@%@%@", [config objectForKey:@"WebAPI"], [config objectForKey:@"ApplicationID"], query];
+            
+            NSString *webApi = [NSString stringWithFormat:@"%@%@", [config objectForKey:@"WebAPI"], [config objectForKey:@"ApplicationID"]];
+            NSURL *url = [NSURL URLWithString:webApi];
+            
+            NSString *path = [NSString stringWithFormat:@"%@%@.json", APPLICATION_SUPPORT_PATH, [config objectForKey:@"ApplicationID"]];
+            if (![fileManager fileExistsAtPath:path] || forceDownloading || autoRefresh) {
+                NSLog(@"File does not exist or self.forceDownloading is true");
+                // Check Connection if cache is not enabled
+                if (!cacheIsEnabled) {
                     
-                    // Check if user enable Roaming for our app
-                    if (self.roamingIsEnabled) {
+                    // Check if user is currently in Roaming Case
+                    if (self.roamingSituation) {
                         
-                        // User is in Roaming case & enable it => Download
+                        // Check if user enable Roaming for our app
+                        if (roamingIsEnabled) {
+                            
+                            // User is in Roaming case & enable it => Download
+                            success = [self testConnection];
+                            if (success) {
+                                self.applicationDatas = [NSData dataWithContentsOfURL:url];
+                                success = [[NSData dataWithContentsOfURL:url] writeToFile:path options:NSDataWritingAtomic error:&error];
+                                if (success) {
+                                    _isDownloadedByNetwork = true;
+                                }
+                            }
+                        }
+                        // User is in Roaming case but disable it => Alert & Quit
+                    } else {
+                        // User is not in Roaming case => Download
                         success = [self testConnection];
                         if (success) {
                             self.applicationDatas = [NSData dataWithContentsOfURL:url];
@@ -383,55 +376,46 @@ NSString *APPLICATION_SUPPORT_PATH;
                             }
                         }
                     }
-                    // User is in Roaming case but disable it => Alert & Quit
-                } else {
-                    // User is not in Roaming case => Download
-                    success = [self testConnection];
-                    if (success) {
-                        self.applicationDatas = [NSData dataWithContentsOfURL:url];
-                        success = [[NSData dataWithContentsOfURL:url] writeToFile:path options:NSDataWritingAtomic error:&error];
-                        if (success) {
-                            _isDownloadedByNetwork = true;
-                        }
-                    }
+                    // Trace Download date for refreshing
+                    self.downloadDate = [NSDate date];
+                    NSLog(@"Download Date = %@", self.downloadDate);
+                    [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.downloadDate forKey:@"downloadDate"]];
+                }
+            }
+            else {
+                NSLog(@"File exists");
+                self.applicationDatas = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:&error];
+                _isDownloadedByFile = true;
+                NSDictionary *attributes = [fileManager attributesOfItemAtPath:[NSString stringWithFormat:@"%@",path] error:&error];
+                self.downloadDate = [attributes fileModificationDate];
+                [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.downloadDate forKey:@"downloadDate"]];
+            }
+            
+            if (self.applicationDatas != Nil) {
+                APPLICATION_FILE = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:self.applicationDatas options:NSJSONReadingMutableLeaves error:&error];
+                if (APPLICATION_FILE != Nil) {
+                    [self searchDependencies];
+                }
+                else {
+                    NSLog(@"An error occured during the Deserialization of Application file : %@", error);
                 }
             }
         }
-        else {
-            //NSLog(@"File exists");
-            self.applicationDatas = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:&error];
-            _isDownloadedByFile = true;
+        @catch (NSException *exception) {
+            NSLog(@"An error occured during the Saving of a Json file : %@, reason : %@", exception.name, exception.reason);
+            UIApplication *app = [UIApplication sharedApplication];
+            [app performSelector:@selector(suspend)];
+            // Wait while app is going background
+            [NSThread sleepForTimeInterval:2.0];
+            exit(0);
         }
-    
-        if (self.applicationDatas != Nil) {
-            APPLICATION_FILE = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:self.applicationDatas options:NSJSONReadingMutableLeaves error:&error];
-            //if (self.application != Nil) {
-            if (APPLICATION_FILE != Nil) {
-                [self searchDependencies];
-            }
-            else {
-                NSLog(@"An error occured during the Deserialization of Application file : %@", error);
-            }
+        @finally {
+            self.downloadIsFinished = YES;
         }
-    }
-    @catch (NSException *exception) {
-        NSLog(@"An error occured during the Saving of a Json file : %@, reason : %@", exception.name, exception.reason);
-        UIApplication *app = [UIApplication sharedApplication];
-        [app performSelector:@selector(suspend)];
-        // Wait while app is going background
-        [NSThread sleepForTimeInterval:2.0];
-        exit(0);
-    }
-    @finally {
-        self.downloadIsFinished = YES;
-    }
-    //NSLog(@"Dl by Network : %hhd", _isDownloadedByNetwork);
-    //NSLog(@"Dl by File : %hhd", _isDownloadedByFile);
-    NSLog(@"End of ConfigureApp Method");
-    if (self.reloadApp || self.forceDownloading) {
-        NSNotification * notif = [NSNotification notificationWithName:@"ConfigureAppNotification" object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:notif];
-    }
+        if (reloadApp || forceDownloading) {
+            NSNotification * notif = [NSNotification notificationWithName:@"ConfigureAppNotification" object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:notif];
+        }
     }
 }
 
@@ -482,20 +466,20 @@ NSString *APPLICATION_SUPPORT_PATH;
             add = [NSMutableString stringWithString:@""];
         }
         html = [NSString stringWithFormat:@"<!DOCTYPE>"
-                          "<html>"
-                          "<head>"
-                          "%@"
-                          "</head>"
-                          "<body>"
-                          "<div id='Main' style='padding:10px;'>"
-                          "%@"
-                          "</body>"
-                          "</head>"
-                          "</html>"
-                          , add, htmlContent];
+                "<html>"
+                "<head>"
+                "%@"
+                "</head>"
+                "<body>"
+                "<div id='Main' style='padding:10px;'>"
+                "%@"
+                "</body>"
+                "</head>"
+                "</html>"
+                , add, htmlContent];
         
     }
-
+    
     return html;
 }
 
@@ -509,7 +493,7 @@ NSString *APPLICATION_SUPPORT_PATH;
     }
     
     [self configureApp];
-    
+
     return YES;
 }
 

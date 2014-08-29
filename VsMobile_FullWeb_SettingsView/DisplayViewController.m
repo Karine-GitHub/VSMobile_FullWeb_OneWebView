@@ -22,13 +22,6 @@
     NSMutableArray *pageDependencies;
 }
 
-- (void)awakeFromNib {
-    [super awakeFromNib];
-}
-- (IBAction)GoToSettings:(id)sender {
-
-}
-
 // Pas appelé lors du retour depuis les settings
 - (void) viewWillAppear:(BOOL)animated
 {
@@ -50,18 +43,19 @@
     
     self.navigationItem.title = nil;
     self.isConflictual = NO;
-    self.needReloadApp = NO;
 }
 
 - (void)settingsDone:(NSNotification *)notification {
     @synchronized(self) {
         if ([notification.name isEqualToString:@"SettingsModificationNotification"]) {
-            self.needReloadApp = YES;
+            reloadApp = YES;
             [self viewDidLoad];
         } else {
-            self.needReloadApp = NO;
+            reloadApp = NO;
             self.isConflictual = NO;
             self.navigationItem.title = self.whereWasI;
+            self.img.hidden = YES;
+            self.Display.hidden = NO;
         }
     }
 }
@@ -76,52 +70,37 @@
     
     // Check if settings view is visible
     @synchronized(self){
-        if (appDel.reloadApp || appDel.forceDownloading) {
+        if ([self.navigationController.visibleViewController isKindOfClass:[DisplayViewController class]])
+        {
+            if (appDel.downloadIsFinished) {
                 @try {
-                    [NSThread sleepForTimeInterval:2.0];
+                    [NSThread sleepForTimeInterval:3.0];
+                    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+                    self.navigationItem.title = self.whereWasI;
                     // Alert user that downloading is finished
                     errorMsg = [NSString stringWithFormat:@"The new settings is now supported. The reconfiguration of the Application is done."];
                     self.settingsDone = [[UIAlertView alloc] initWithTitle:@"Reconfiguration Successful" message:errorMsg delegate:self cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
-                    [self.settingsDone show];
-                    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-                    self.navigationItem.title = self.whereWasI;
-                    //}
-                } @catch (NSException *exception) {
-                    errorMsg = @"Reconfig fails";
-                    self.settingsDone = [[UIAlertView alloc] initWithTitle:@"Reconfiguration fails" message:errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                    //[self.settingsDone show];
+                    [self.settingsDone performSelectorOnMainThread:@selector(show) withObject:self waitUntilDone:YES];
                 } @finally {
-                    self.needReloadApp = NO;
+                    reloadApp = NO;
+                    forceDownloading = NO;
                     [self viewDidLoad];
                 }
             }
         }
+    }
 }
 
 - (void)reloadApp
 {
     @synchronized(self) {
-    // Check if menu view is visible
-
+        // Check if menu view is visible
+        
         if (appDel == Nil) {
             appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
         }
-        @try {
-            [appDel setReloadApp:YES];
-            [appDel configureApp];
-        }
-        @catch (NSException *exception) {
-            if (appDel.cacheIsEnabled) {
-                errorMsg = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Please turn it off.";
-            } else if (!appDel.isDownloadedByNetwork) {
-                errorMsg = @"Impossible to download content on the server. The network connection is too low or off. Please try later.";
-            }
-            UIAlertView *alertLoadingFail = [[UIAlertView alloc] initWithTitle:@"Downloading fails" message:errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-            [alertLoadingFail show];
-        }
-        @finally {
-            [appDel setReloadApp:NO];
-        }
+        reloadApp = YES;;
+        [appDel configureApp];
     }
 }
 
@@ -140,15 +119,6 @@
         appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
         
         self.Display.delegate = self;
-        if ([[self.Display subviews] count] > 0) {
-            // hide the shadows
-            for (UIView* shadowView in [[[self.Display subviews] objectAtIndex:0] subviews]) {
-                [shadowView setHidden:YES];
-            }
-            // show the content
-            [[[[[self.Display subviews] objectAtIndex:0] subviews] lastObject] setHidden:NO];
-        }
-        self.Display.backgroundColor = [UIColor whiteColor];
         
         self.navigationItem.hidesBackButton = YES;
         self.navigationItem.title = self.whereWasI;
@@ -162,21 +132,23 @@
                 self.imageI = [[self.view subviews] indexOfObject:v];
             }
         }
+
+        [self performSelectorInBackground:@selector(refreshApplicationByNewDownloading) withObject:self];
         
-    if (self.isConflictual) {
-        self.navigationItem.title = @"Conflictual situation";
-        self.img.hidden = NO;
-        self.Display.hidden = YES;
-    } else if (self.needReloadApp) {
-        self.navigationItem.title = @"Reconfiguration in progress";
-        self.img.hidden = NO;
-        self.Display.hidden = YES;
-        [self performSelectorInBackground:@selector(reloadApp) withObject:self];
-    } else {
-        self.img.hidden = YES;
-        self.Display.hidden = NO;
-    }
-    
+        if (self.isConflictual) {
+            self.navigationItem.title = @"Conflictual situation";
+            self.img.hidden = NO;
+            self.Display.hidden = YES;
+        } else if (reloadApp) {
+            self.navigationItem.title = @"Reconfiguration in progress";
+            self.img.hidden = NO;
+            self.Display.hidden = YES;
+            [self performSelectorInBackground:@selector(reloadApp) withObject:self];
+        } else {
+            self.img.hidden = YES;
+            self.Display.hidden = NO;
+        }
+        
     [self initApp];
     }
 }
@@ -185,26 +157,20 @@
 {
     // Get Application json file
     @try {
-        UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Application fails" message:nil delegate:self cancelButtonTitle:@"Quit" otherButtonTitles:nil];
+        UIAlertView *alertConflict = [[UIAlertView alloc] initWithTitle:@"Conflictual Situation" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:@"Settings",nil];
         float size = [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue];
-        if (appDel.cacheIsEnabled && size == 0.0) {
-            //NSLog(@"Cache enabled");
+        if (cacheIsEnabled && size == 0.0) {
             self.isConflictual = NO;
-            alertNoConnection.title = @"Conflictual Situation";
-            alertNoConnection.message = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Do you want to disable it ?";
-            [alertNoConnection addButtonWithTitle:@"Settings"];
-            [alertNoConnection show];
-        } else if (appDel.roamingSituation && !appDel.roamingIsEnabled) {
-            //NSLog(@"appDel.roamingSituation && !appDel.roamingIsEnabled");
+            alertConflict.message = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Do you want to disable it ?";
+            [alertConflict show];
+        } else if (appDel.roamingSituation && !roamingIsEnabled) {
             self.isConflictual = NO;
-            alertNoConnection.title = @"Conflictual Situation";
-            alertNoConnection.message = @"Impossible to download content. You are currently in Roaming case and the roaming mode is disabled : it blocks the downloading. Do you want to enable it ?";
-            [alertNoConnection addButtonWithTitle:@"Settings"];
-            [alertNoConnection show];
+            alertConflict.message = @"Impossible to download content. You are currently in Roaming case and the roaming mode is disabled : it blocks the downloading. Do you want to enable it ?";
+            [alertConflict show];
             /*} else if (!appDel.serverIsOk) {
              alertNoConnection.message = @"Impossible to download content on the server because it is not reachable. The application will shut down. Sorry for the inconvenience. Please try later.";*/
         } else if (!self.Display.hidden) {
-            //NSLog(@"Menu visible");
+            UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Application fails" message:nil delegate:self cancelButtonTitle:@"Quit" otherButtonTitles:nil];
             if (appDel.isDownloadedByNetwork || appDel.isDownloadedByFile) {
                 if (APPLICATION_FILE != Nil) {
                 appDependencies = [APPLICATION_FILE objectForKey:@"Dependencies"];
@@ -216,11 +182,9 @@
                     }
                 }
             } else if (!appDel.isDownloadedByNetwork) {
-                //NSLog(@"Not downloaded by network");
                 alertNoConnection.message = @"Impossible to download content on the server. The network connection is too low or off. The application will shut down. Please try later.";
                 [alertNoConnection show];
             } else if (!appDel.isDownloadedByFile) {
-                //NSLog(@"Not downloaded by file");
                 alertNoConnection.message = @"Impossible to download content file. The application will shut down. Sorry for the inconvenience.";
                 [alertNoConnection show];
             }
@@ -339,21 +303,17 @@
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
     self.whereWasI = self.navigationItem.title;
-
-    [UIView beginAnimations:@"animationID" context:nil];
-	[UIView setAnimationDuration:2.0f];
-	[UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-	[UIView setAnimationRepeatAutoreverses:NO];
-    [UIView setAnimationTransition:UIViewAnimationTransitionCurlUp forView:self.view cache:YES];
-    [self.view exchangeSubviewAtIndex:self.webviewI withSubviewAtIndex:self.imageI];
-	[UIView commitAnimations];
-    
     [self.Activity stopAnimating];
     self.Activity.hidden = YES;
     self.img.hidden = YES;
     self.Display.hidden = NO;
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-    NSLog(@"IsLoading = %hhd", webView.isLoading);
+    [UIView beginAnimations:@"animationID" context:nil];
+	[UIView setAnimationDuration:2.0f];
+	[UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+	[UIView setAnimationRepeatAutoreverses:NO];
+    [UIView setAnimationTransition:UIViewAnimationTransitionCurlUp forView:self.view cache:YES];
+	[UIView commitAnimations];
 }
 
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
@@ -367,26 +327,34 @@
     
     int index = [APPLICATION_SUPPORT_PATH length] - 1;
     NSString *path = [APPLICATION_SUPPORT_PATH substringToIndex:index];
-    //NSLog(@"Path modifié = %@", path);
-    NSLog(@"Query = %@", [request.URL query]);
-    NSLog(@"RelativePath = %@", [request.URL relativePath]);
-    NSLog(@"Navigation type = %d", navigationType);
+
+    NSArray *pathComponent = [[request.URL relativePath] pathComponents];
 
     if ([[request.URL relativePath] isEqualToString:path]) {
         // First loading
+        self.lastPath = nil;
         return YES;
     } else if ([[request.URL relativePath] isEqualToString:[NSString stringWithFormat:@"%@index.html", APPLICATION_SUPPORT_PATH]]) {
         self.navigationItem.title = @"Menu";
+        self.lastPath = [pathComponent lastObject];
         return YES;
     } else if ([[request.URL relativePath] isEqualToString:[NSString stringWithFormat:@"%@details.html", APPLICATION_SUPPORT_PATH]]) {
+        self.lastPath = [pathComponent lastObject];
         return YES;
     } else if ([request.URL query] != nil) {
+        self.lastPath = nil;
         self.PageID = [request.URL query];
         [self configureDetails];
         return YES;
     } else if (![request.URL relativePath] && ![request.URL query] && !self.PageID) {
+        self.lastPath = nil;
+        return YES;
+    } else if (![request.URL relativePath] && ![request.URL query] && navigationType == 5 && [self.lastPath isEqualToString:@"index.html"]) {
+        self.lastPath = nil;
+        [self configureHome];
         return YES;
     }
+    
     return NO;
 }
 
@@ -419,6 +387,46 @@
 
     } else if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"OK"]) {
         self.isConflictual = NO;
+    }
+}
+
+
+// Do not change the date if just the refresh variable has changed
+- (void) refreshApplicationByNewDownloading
+{
+    @synchronized(self){
+        if (appDel == Nil) {
+            appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+        }
+        int interval;
+        if ([appDel.refreshDuration isEqualToString:@"heure"]) {
+            interval= [appDel.refreshInterval doubleValue] * 60 * 60;
+        } else if ([appDel.refreshDuration isEqualToString:@"jour"]) {
+            interval = [appDel.refreshInterval integerValue] * 60 * 60 * 24;
+        }
+        
+        if (self.backgroundTimer.timeInterval != interval) {
+            self.backgroundTimer = [NSTimer timerWithTimeInterval:[appDel.refreshInterval integerValue] * 60 target:self selector:@selector(forceDownloadingApplication:) userInfo:nil repeats:YES];
+            [[NSRunLoop currentRunLoop] addTimer:self.backgroundTimer forMode:NSRunLoopCommonModes];
+        }
+    }
+}
+
+- (void) forceDownloadingApplication:(NSTimer *)timer
+{
+    @synchronized(self){
+        if (appDel == Nil) {
+            appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+        }
+        NSTimeInterval currentInterval = [[NSDate date] timeIntervalSinceDate:[[NSUserDefaults standardUserDefaults] objectForKey:@"downloadDate"]];
+        NSLog(@"Current interval = %f, Choosen Interval = %f", currentInterval, timer.timeInterval);
+        
+        if (!cacheIsEnabled) {
+            if (currentInterval >= timer.timeInterval) {
+                // Download all
+                [appDel performSelectorInBackground:@selector(configureApp) withObject:appDel];
+            }
+        }
     }
 }
 
