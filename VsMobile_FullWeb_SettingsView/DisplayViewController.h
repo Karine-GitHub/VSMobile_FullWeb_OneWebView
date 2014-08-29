@@ -9,12 +9,17 @@
 #import <UIKit/UIKit.h>
 #import "SettingsView.h"
 
-@interface DisplayViewController : UIViewController <UIAlertViewDelegate, UITextViewDelegate, UISplitViewControllerDelegate, UIWebViewDelegate>
+@interface DisplayViewController : UIViewController <UIAlertViewDelegate, UITextViewDelegate, UISplitViewControllerDelegate, UIWebViewDelegate, UITabBarDelegate>
 
 @property (weak, nonatomic) IBOutlet UIWebView *Display;
 @property (weak, nonatomic) IBOutlet UIButton *Settings;
 @property (strong, nonatomic) IBOutlet UIImageView *img;
 @property (strong, nonatomic) IBOutlet UIActivityIndicatorView *Activity;
+
+typedef NS_ENUM(NSInteger, itemTag) {shareItemTag = 30,
+                                    geolocItemTag = 31,
+                                    contactsItemTag = 32,
+                                    calendarItemTag = 33 };
 
 @property id PageID;
 
@@ -22,6 +27,7 @@
 @property int imageI;
 
 @property (strong, nonatomic) UIAlertView *settingsDone;
+@property (strong, nonatomic) UIActivityViewController *shareActivity;
 
 @property (strong,nonatomic) NSString *whereWasI;
 @property (strong, nonatomic) NSString *lastPath;

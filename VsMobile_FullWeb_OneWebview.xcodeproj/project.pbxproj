@@ -30,6 +30,8 @@
 		84C71678199CD11100E023E1 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 84C71676199CD11100E023E1 /* Main_iPad.storyboard */; };
 		84C7167B199CD9DD00E023E1 /* SettingsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C7167A199CD9DD00E023E1 /* SettingsView.m */; };
 		84C7167D199CDF8A00E023E1 /* Configuration.plist in Resources */ = {isa = PBXBuildFile; fileRef = 84C7167C199CDF8A00E023E1 /* Configuration.plist */; };
+		84F48D5419B0B35B009AAC09 /* CalendarTools.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F48D5319B0B35B009AAC09 /* CalendarTools.m */; };
+		84F48D5619B0B410009AAC09 /* EventKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84F48D5519B0B410009AAC09 /* EventKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +76,9 @@
 		84C71679199CD9DD00E023E1 /* SettingsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SettingsView.h; sourceTree = "<group>"; };
 		84C7167A199CD9DD00E023E1 /* SettingsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingsView.m; sourceTree = "<group>"; };
 		84C7167C199CDF8A00E023E1 /* Configuration.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Configuration.plist; sourceTree = "<group>"; };
+		84F48D5219B0B35B009AAC09 /* CalendarTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CalendarTools.h; path = ../CalendarTools.h; sourceTree = "<group>"; };
+		84F48D5319B0B35B009AAC09 /* CalendarTools.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CalendarTools.m; path = ../CalendarTools.m; sourceTree = "<group>"; };
+		84F48D5519B0B410009AAC09 /* EventKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKit.framework; path = System/Library/Frameworks/EventKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +86,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84F48D5619B0B410009AAC09 /* EventKit.framework in Frameworks */,
 				84C71674199CCFE000E023E1 /* MessageUI.framework in Frameworks */,
 				84C71672199CCFD100E023E1 /* SystemConfiguration.framework in Frameworks */,
 				84C71670199CCFC800E023E1 /* CoreTelephony.framework in Frameworks */,
@@ -125,6 +131,7 @@
 		84C7162A199CCEE000E023E1 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				84F48D5519B0B410009AAC09 /* EventKit.framework */,
 				84C71673199CCFE000E023E1 /* MessageUI.framework */,
 				84C71671199CCFD100E023E1 /* SystemConfiguration.framework */,
 				84C7166F199CCFC800E023E1 /* CoreTelephony.framework */,
@@ -139,6 +146,8 @@
 		84C71631199CCEE000E023E1 /* VsMobile_FullWeb_SettingsView */ = {
 			isa = PBXGroup;
 			children = (
+				84F48D5219B0B35B009AAC09 /* CalendarTools.h */,
+				84F48D5319B0B35B009AAC09 /* CalendarTools.m */,
 				84C7167C199CDF8A00E023E1 /* Configuration.plist */,
 				84C71675199CD11100E023E1 /* Main_iPhone.storyboard */,
 				84C71676199CD11100E023E1 /* Main_iPad.storyboard */,
@@ -239,7 +248,7 @@
 						DevelopmentTeam = 3BZ9RQY6AQ;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
-								enabled = 1;
+								enabled = 0;
 							};
 						};
 					};
@@ -298,6 +307,7 @@
 			files = (
 				84C71669199CCF3400E023E1 /* AppDelegate.m in Sources */,
 				8480C645199CF47C00368E81 /* RefreshSettingViewController.m in Sources */,
+				84F48D5419B0B35B009AAC09 /* CalendarTools.m in Sources */,
 				84C71638199CCEE000E023E1 /* main.m in Sources */,
 				84C7166D199CCF3400E023E1 /* DisplayViewController.m in Sources */,
 				84C7166E199CCF3400E023E1 /* Reachability.m in Sources */,

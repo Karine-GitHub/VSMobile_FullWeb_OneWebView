@@ -28,6 +28,8 @@ extern BOOL roamingIsEnabled;
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, nonatomic) NSData *applicationDatas;
 
+@property long VersionID;
+
 // Settings
 @property BOOL roamingSituation;
 @property NSNumber *refreshInterval;

@@ -395,6 +395,16 @@ BOOL roamingIsEnabled;
                 APPLICATION_FILE = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:self.applicationDatas options:NSJSONReadingMutableLeaves error:&error];
                 if (APPLICATION_FILE != Nil) {
                     [self searchDependencies];
+                    if ([APPLICATION_FILE objectForKey:@"VersionID"]) {
+                        if (!self.VersionID) {
+                            self.VersionID = (long)[APPLICATION_FILE objectForKey:@"VersionID"];
+                        } else if (self.VersionID != (long)[APPLICATION_FILE objectForKey:@"VersionID"]) {
+                            forceDownloading = YES;
+                            self.VersionID = (long)[APPLICATION_FILE objectForKey:@"VersionID"];
+                        }
+                        NSNumber *num = [NSNumber numberWithLong:self.VersionID];
+                        [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:num forKey:@"VersionID"]];
+                    }
                 }
                 else {
                     NSLog(@"An error occured during the Deserialization of Application file : %@", error);

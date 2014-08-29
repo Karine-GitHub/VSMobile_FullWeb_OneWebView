@@ -7,7 +7,7 @@
 //
 #import "AppDelegate.h"
 #import "DisplayViewController.h"
-
+#import "CalendarTools.h"
 
 @interface DisplayViewController ()
 
@@ -36,7 +36,6 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureAppDone:) name:@"ConfigureAppNotification" object:nil];
 }
 
-
 - (void) viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:YES];
@@ -45,7 +44,8 @@
     self.isConflictual = NO;
 }
 
-- (void)settingsDone:(NSNotification *)notification {
+- (void)settingsDone:(NSNotification *)notification
+{
     @synchronized(self) {
         if ([notification.name isEqualToString:@"SettingsModificationNotification"]) {
             reloadApp = YES;
@@ -59,14 +59,15 @@
         }
     }
 }
-- (void)conflictIssue:(NSNotification *)notification {
+- (void)conflictIssue:(NSNotification *)notification
+{
     @synchronized(self){
         self.isConflictual = YES;
         [self viewDidLoad];
     }
 }
-
-- (void)configureAppDone:(NSNotification *)notification {
+- (void)configureAppDone:(NSNotification *)notification
+{
     
     // Check if settings view is visible
     @synchronized(self){
@@ -315,7 +316,6 @@
     [UIView setAnimationTransition:UIViewAnimationTransitionCurlUp forView:self.view cache:YES];
 	[UIView commitAnimations];
 }
-
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
 {
 
@@ -357,7 +357,6 @@
     
     return NO;
 }
-
 - (void)webView:(UIWebView *)webview didFailLoadWithError:(NSError *)error
 {
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
@@ -390,6 +389,45 @@
     }
 }
 
+/*
+        case shareItemTag : {
+            NSDictionary *dico = [self.Display.request allHTTPHeaderFields];
+            NSData *data = [self.Display.request HTTPBody];
+            UIImage *shareImage = [UIImage imageNamed:@""];
+            NSString *shareMessage = @"";
+            NSURL *shareUrl = [self.Display.request URL];
+            NSArray *shareArray = [NSArray arrayWithObjects:shareMessage, shareImage, shareUrl, nil];
+            self.shareActivity = [[UIActivityViewController alloc] initWithActivityItems:shareArray applicationActivities:nil];
+            self.shareActivity.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+            [self presentViewController:self.shareActivity animated:YES completion:nil];
+        }
+            break;
+        case geolocItemTag :
+            NSLog(@"bla");
+            break;
+        case contactsItemTag :
+            NSLog(@"bla");
+            break;
+        case calendarItemTag : {
+            [CalendarTools requestAccess:^(BOOL granted, NSError *error) {
+                if (granted) {
+                    NSDate *myDate = [NSDate dateWithTimeIntervalSinceNow:86400]; // 1 jour
+                    BOOL result = [CalendarTools addEventAt:myDate withTitle:@"My new RDV" inLocation:@"Luxembourg"];
+                    if (result) {
+                        NSLog(@"RDV Ajouté");
+                    } else {
+                        NSLog(@"RDV pas ajouté");
+                    }
+                } else {
+                    // Permission denied
+                }
+                }];
+        }
+            break;
+        default:
+            break;
+    }
+} */
 
 // Do not change the date if just the refresh variable has changed
 - (void) refreshApplicationByNewDownloading
