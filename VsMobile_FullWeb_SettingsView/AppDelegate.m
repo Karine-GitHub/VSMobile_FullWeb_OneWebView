@@ -106,20 +106,20 @@ BOOL roamingIsEnabled;
     }
     
     @synchronized(self) {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]) {
-        // Check if change
-        if (self.refreshInterval != [NSNumber numberWithInt:[[NSUserDefaults standardUserDefaults] integerForKey:@"intervalChoice"]]
-            || self.refreshDuration != [[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"]) {
-            self.refreshInterval = [NSNumber numberWithInt:[[NSUserDefaults standardUserDefaults] integerForKey:@"intervalChoice"]];
-            self.refreshDuration = [[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"];
+        if ([[NSUserDefaults standardUserDefaults] objectForKey:@"intervalChoice"] && [[NSUserDefaults standardUserDefaults] objectForKey:@"durationChoice"]) {
+            // Check if change
+            if (self.refreshInterval != [NSNumber numberWithInt:[[NSUserDefaults standardUserDefaults] integerForKey:@"intervalChoice"]]
+                || self.refreshDuration != [[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"]) {
+                self.refreshInterval = [NSNumber numberWithInt:[[NSUserDefaults standardUserDefaults] integerForKey:@"intervalChoice"]];
+                self.refreshDuration = [[NSUserDefaults standardUserDefaults] stringForKey:@"durationChoice"];
+            }
+        } else {
+            self.refreshInterval = [NSNumber numberWithInt:1];
+            self.refreshDuration = @"jour";
+            
+            [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.refreshInterval forKey:@"intervalChoice"]];
+            [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.refreshDuration forKey:@"durationChoice"]];
         }
-    } else {
-        self.refreshInterval = [NSNumber numberWithInt:1];
-        self.refreshDuration = @"jour";
-        
-        [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.refreshInterval forKey:@"intervalChoice"]];
-        [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:self.refreshDuration forKey:@"durationChoice"]];
-    }
     }
 }
 
@@ -190,13 +190,10 @@ BOOL roamingIsEnabled;
                         if (!success) {
                             NSLog(@"An error occured during the Creation of Template folder : %@", error);
                         }
-                        else {
-                            if (![fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@%@%@", APPLICATION_SUPPORT_PATH, firstDir, sndDir] isDirectory:&isDirectory] || forceDownloading || autoRefresh) {
-                                success = [fileManager createDirectoryAtPath:[NSString stringWithFormat:@"%@%@%@", APPLICATION_SUPPORT_PATH, firstDir, sndDir] withIntermediateDirectories:YES attributes:nil error:&error];
-                                if (!success) {
-                                    NSLog(@"An error occured during the Creation of Template folder : %@", error);
-                                }
-                            }
+                    } else if (![fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@%@%@", APPLICATION_SUPPORT_PATH, firstDir, sndDir] isDirectory:&isDirectory] || forceDownloading || autoRefresh) {
+                        success = [fileManager createDirectoryAtPath:[NSString stringWithFormat:@"%@%@%@", APPLICATION_SUPPORT_PATH, firstDir, sndDir] withIntermediateDirectories:YES attributes:nil error:&error];
+                        if (!success) {
+                            NSLog(@"An error occured during the Creation of Template folder : %@", error);
                         }
                     }
                     path = [NSString stringWithFormat:@"%@%@%@/%@", APPLICATION_SUPPORT_PATH, firstDir, sndDir, fileName];
@@ -395,7 +392,7 @@ BOOL roamingIsEnabled;
                 APPLICATION_FILE = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:self.applicationDatas options:NSJSONReadingMutableLeaves error:&error];
                 if (APPLICATION_FILE != Nil) {
                     [self searchDependencies];
-                    if ([APPLICATION_FILE objectForKey:@"VersionID"]) {
+                    /*if ([APPLICATION_FILE objectForKey:@"VersionID"]) {
                         if (!self.VersionID) {
                             self.VersionID = (long)[APPLICATION_FILE objectForKey:@"VersionID"];
                         } else if (self.VersionID != (long)[APPLICATION_FILE objectForKey:@"VersionID"]) {
@@ -404,7 +401,7 @@ BOOL roamingIsEnabled;
                         }
                         NSNumber *num = [NSNumber numberWithLong:self.VersionID];
                         [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:num forKey:@"VersionID"]];
-                    }
+                    }*/
                 }
                 else {
                     NSLog(@"An error occured during the Deserialization of Application file : %@", error);
@@ -496,14 +493,14 @@ BOOL roamingIsEnabled;
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+    /*if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
         UISplitViewController *splitViewController = (UISplitViewController *)self.window.rootViewController;
         UINavigationController *navigationController = [splitViewController.viewControllers lastObject];
         splitViewController.delegate = (id)navigationController.topViewController;
-    }
+    }*/
     
     [self configureApp];
-
+    
     return YES;
 }
 

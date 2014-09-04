@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		8480C645199CF47C00368E81 /* RefreshSettingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8480C644199CF47C00368E81 /* RefreshSettingViewController.m */; };
+		84BB2CD519B744E40073A8FE /* ServicesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 84BB2CD419B744E40073A8FE /* ServicesManager.m */; };
+		84BB2CDB19B84E0A0073A8FE /* checkBox.png in Resources */ = {isa = PBXBuildFile; fileRef = 84BB2CD719B84E0A0073A8FE /* checkBox.png */; };
+		84BB2CDC19B84E0A0073A8FE /* checkBox@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 84BB2CD819B84E0A0073A8FE /* checkBox@2x.png */; };
+		84BB2CDD19B84E0A0073A8FE /* checkBoxMarked.png in Resources */ = {isa = PBXBuildFile; fileRef = 84BB2CD919B84E0A0073A8FE /* checkBoxMarked.png */; };
+		84BB2CDE19B84E0A0073A8FE /* checkBoxMarked@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 84BB2CDA19B84E0A0073A8FE /* checkBoxMarked@2x.png */; };
 		84C7162C199CCEE000E023E1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C7162B199CCEE000E023E1 /* Foundation.framework */; };
 		84C7162E199CCEE000E023E1 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C7162D199CCEE000E023E1 /* CoreGraphics.framework */; };
 		84C71630199CCEE000E023E1 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84C7162F199CCEE000E023E1 /* UIKit.framework */; };
@@ -47,6 +52,12 @@
 /* Begin PBXFileReference section */
 		8480C643199CF47C00368E81 /* RefreshSettingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RefreshSettingViewController.h; sourceTree = "<group>"; };
 		8480C644199CF47C00368E81 /* RefreshSettingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RefreshSettingViewController.m; sourceTree = "<group>"; };
+		84BB2CD319B744E40073A8FE /* ServicesManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ServicesManager.h; sourceTree = "<group>"; };
+		84BB2CD419B744E40073A8FE /* ServicesManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ServicesManager.m; sourceTree = "<group>"; };
+		84BB2CD719B84E0A0073A8FE /* checkBox.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = checkBox.png; path = ../../../../admin/Downloads/checkboxes/checkBox.png; sourceTree = "<group>"; };
+		84BB2CD819B84E0A0073A8FE /* checkBox@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "checkBox@2x.png"; sourceTree = "<group>"; };
+		84BB2CD919B84E0A0073A8FE /* checkBoxMarked.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = checkBoxMarked.png; path = ../../../../admin/Downloads/checkboxes/checkBoxMarked.png; sourceTree = "<group>"; };
+		84BB2CDA19B84E0A0073A8FE /* checkBoxMarked@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "checkBoxMarked@2x.png"; sourceTree = "<group>"; };
 		84C71628199CCEE000E023E1 /* VsMobile_FullWeb_OneWebview.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VsMobile_FullWeb_OneWebview.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		84C7162B199CCEE000E023E1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		84C7162D199CCEE000E023E1 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -109,6 +120,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		84BB2CD619B84E0A0073A8FE /* checkboxes */ = {
+			isa = PBXGroup;
+			children = (
+				84BB2CD819B84E0A0073A8FE /* checkBox@2x.png */,
+				84BB2CDA19B84E0A0073A8FE /* checkBoxMarked@2x.png */,
+			);
+			name = checkboxes;
+			path = ../../../../admin/Downloads/checkboxes;
+			sourceTree = "<group>";
+		};
 		84C7161F199CCEE000E023E1 = {
 			isa = PBXGroup;
 			children = (
@@ -146,6 +167,9 @@
 		84C71631199CCEE000E023E1 /* VsMobile_FullWeb_SettingsView */ = {
 			isa = PBXGroup;
 			children = (
+				84BB2CD919B84E0A0073A8FE /* checkBoxMarked.png */,
+				84BB2CD719B84E0A0073A8FE /* checkBox.png */,
+				84BB2CD619B84E0A0073A8FE /* checkboxes */,
 				84F48D5219B0B35B009AAC09 /* CalendarTools.h */,
 				84F48D5319B0B35B009AAC09 /* CalendarTools.m */,
 				84C7167C199CDF8A00E023E1 /* Configuration.plist */,
@@ -164,6 +188,8 @@
 				84C7167A199CD9DD00E023E1 /* SettingsView.m */,
 				8480C643199CF47C00368E81 /* RefreshSettingViewController.h */,
 				8480C644199CF47C00368E81 /* RefreshSettingViewController.m */,
+				84BB2CD319B744E40073A8FE /* ServicesManager.h */,
+				84BB2CD419B744E40073A8FE /* ServicesManager.m */,
 			);
 			path = VsMobile_FullWeb_SettingsView;
 			sourceTree = "<group>";
@@ -281,10 +307,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84BB2CDB19B84E0A0073A8FE /* checkBox.png in Resources */,
 				84C71678199CD11100E023E1 /* Main_iPad.storyboard in Resources */,
 				84C71677199CD11100E023E1 /* Main_iPhone.storyboard in Resources */,
+				84BB2CDC19B84E0A0073A8FE /* checkBox@2x.png in Resources */,
 				84C71636199CCEE000E023E1 /* InfoPlist.strings in Resources */,
+				84BB2CDE19B84E0A0073A8FE /* checkBoxMarked@2x.png in Resources */,
 				84C7167D199CDF8A00E023E1 /* Configuration.plist in Resources */,
+				84BB2CDD19B84E0A0073A8FE /* checkBoxMarked.png in Resources */,
 				84C71668199CCF3400E023E1 /* 20-gear2.png in Resources */,
 				84C7163E199CCEE000E023E1 /* Images.xcassets in Resources */,
 			);
@@ -308,6 +338,7 @@
 				84C71669199CCF3400E023E1 /* AppDelegate.m in Sources */,
 				8480C645199CF47C00368E81 /* RefreshSettingViewController.m in Sources */,
 				84F48D5419B0B35B009AAC09 /* CalendarTools.m in Sources */,
+				84BB2CD519B744E40073A8FE /* ServicesManager.m in Sources */,
 				84C71638199CCEE000E023E1 /* main.m in Sources */,
 				84C7166D199CCF3400E023E1 /* DisplayViewController.m in Sources */,
 				84C7166E199CCF3400E023E1 /* Reachability.m in Sources */,

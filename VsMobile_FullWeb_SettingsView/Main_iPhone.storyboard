@@ -44,6 +44,7 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
+                                    <action selector="SettingsClick:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="An8-Hw-T4P"/>
                                     <segue destination="AGk-MO-ZaF" kind="push" identifier="settings" id="d3R-QY-osi"/>
                                 </connections>
                             </button>
@@ -55,14 +56,6 @@
                                 <rect key="frame" x="150" y="203" width="37" height="37"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </activityIndicatorView>
-                            <searchBar contentMode="redraw" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="FuS-3K-4r3">
-                                <rect key="frame" x="0.0" y="437" width="320" height="44"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                <textInputTraits key="textInputTraits"/>
-                                <connections>
-                                    <outlet property="delegate" destination="vXZ-lx-hvc" id="JKh-zk-OOi"/>
-                                </connections>
-                            </searchBar>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
@@ -82,7 +75,6 @@
                 <searchDisplayController id="oNV-Sd-lOA">
                     <connections>
                         <outlet property="delegate" destination="vXZ-lx-hvc" id="MT8-fe-I6V"/>
-                        <outlet property="searchBar" destination="FuS-3K-4r3" id="YUc-zk-EGE"/>
                         <outlet property="searchContentsController" destination="vXZ-lx-hvc" id="K0u-Jy-NQc"/>
                         <outlet property="searchResultsDataSource" destination="vXZ-lx-hvc" id="e7c-TL-AdX"/>
                         <outlet property="searchResultsDelegate" destination="vXZ-lx-hvc" id="FA5-JX-SRS"/>
@@ -90,6 +82,37 @@
                 </searchDisplayController>
             </objects>
             <point key="canvasLocation" x="254" y="497"/>
+        </scene>
+        <!--Services Manager-->
+        <scene sceneID="XiG-R5-abx">
+            <objects>
+                <tableViewController id="7CF-UI-Rcq" customClass="ServicesManager" sceneMemberID="viewController">
+                    <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="IKf-XN-wWE">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <prototypes>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="cell" id="H06-nX-Z3C">
+                                <rect key="frame" x="0.0" y="86" width="320" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="H06-nX-Z3C" id="ojp-EO-Muc">
+                                    <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </tableViewCellContentView>
+                                <color key="backgroundColor" cocoaTouchSystemColor="tableCellGroupedBackgroundColor"/>
+                                <color key="tintColor" cocoaTouchSystemColor="tableCellGroupedBackgroundColor"/>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="7CF-UI-Rcq" id="qck-Bq-0w8"/>
+                            <outlet property="delegate" destination="7CF-UI-Rcq" id="H5T-lU-5Cu"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" id="Dcu-0X-sXx"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="8be-oK-mxb" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1208" y="158"/>
         </scene>
         <!--Settings View - Préférences-->
         <scene sceneID="6i1-13-msR">
@@ -102,15 +125,15 @@
                         <sections>
                             <tableViewSection headerTitle="SERVICES" id="w0S-LA-tva">
                                 <cells>
-                                    <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Services" textLabel="ong-U3-P4f" style="IBUITableViewCellStyleDefault" id="ze3-vJ-azv">
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="none" accessoryType="disclosureIndicator" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Services" textLabel="ong-U3-P4f" style="IBUITableViewCellStyleDefault" id="ze3-vJ-azv">
                                         <rect key="frame" x="0.0" y="119" width="320" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ze3-vJ-azv" id="sDi-da-Pvq">
-                                            <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="287" height="43"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="left" text="Gérer mes services" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ong-U3-P4f">
-                                                    <rect key="frame" x="15" y="0.0" width="290" height="43"/>
+                                                    <rect key="frame" x="15" y="0.0" width="270" height="43"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
@@ -118,6 +141,9 @@
                                                 </label>
                                             </subviews>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="7CF-UI-Rcq" kind="push" id="o9T-6o-kRE"/>
+                                        </connections>
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
@@ -157,26 +183,25 @@
                             </tableViewSection>
                             <tableViewSection headerTitle="" id="3oB-2W-TDV">
                                 <cells>
-                                    <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="loading_data" id="HdI-i1-FZg">
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="loading_data" textLabel="Ui8-JX-j20" style="IBUITableViewCellStyleDefault" id="HdI-i1-FZg">
                                         <rect key="frame" x="0.0" y="275" width="320" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="HdI-i1-FZg" id="Yqe-Iy-UOl">
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QgD-nd-5Dp">
-                                                    <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
-                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                    <state key="normal" title="   Charger toutes les données">
-                                                        <color key="titleColor" cocoaTouchSystemColor="darkTextColor"/>
-                                                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                                    </state>
-                                                    <connections>
-                                                        <action selector="dataLoadingClick:" destination="AGk-MO-ZaF" eventType="touchUpInside" id="dwg-xN-Rcp"/>
-                                                    </connections>
-                                                </button>
+                                                <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="left" text="Charger toutes les données" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Ui8-JX-j20">
+                                                    <rect key="frame" x="15" y="0.0" width="290" height="43"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
                                             </subviews>
                                         </tableViewCellContentView>
+                                        <accessibility key="accessibilityConfiguration">
+                                            <accessibilityTraits key="traits" none="YES" button="YES"/>
+                                        </accessibility>
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
@@ -284,27 +309,34 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="delete_cache" id="dtI-xU-xdH">
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="delete_cache" textLabel="fLP-gj-k6D" style="IBUITableViewCellStyleDefault" id="dtI-xU-xdH">
                                         <rect key="frame" x="0.0" y="583" width="320" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dtI-xU-xdH" id="uJh-CL-oLp">
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wWh-7f-Gjs">
-                                                    <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
-                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                    <state key="normal" title="Vider le cache">
-                                                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                                    </state>
-                                                    <connections>
-                                                        <action selector="deleteCacheClick:" destination="AGk-MO-ZaF" eventType="touchUpInside" id="or1-Aj-Aep"/>
-                                                    </connections>
-                                                </button>
+                                                <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="left" usesAttributedText="YES" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="fLP-gj-k6D">
+                                                    <rect key="frame" x="15" y="0.0" width="290" height="43"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <attributedString key="attributedText">
+                                                        <fragment content="Vider le cache">
+                                                            <attributes>
+                                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                                <font key="NSFont" size="18" name="HelveticaNeue-Bold"/>
+                                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                                            </attributes>
+                                                        </fragment>
+                                                    </attributedString>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
                                             </subviews>
                                             <color key="backgroundColor" red="1" green="0.011788656142404319" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                            <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         </tableViewCellContentView>
+                                        <color key="backgroundColor" red="1" green="0.011788656139999999" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        <accessibility key="accessibilityConfiguration">
+                                            <accessibilityTraits key="traits" none="YES" button="YES"/>
+                                        </accessibility>
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
@@ -313,17 +345,14 @@
                             <outlet property="delegate" destination="AGk-MO-ZaF" id="gTI-tc-FdK"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Préférences" id="vno-tr-cah">
-                        <barButtonItem key="backBarButtonItem" title="OK" id="00E-qE-ch6"/>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" title="Préférences" id="vno-tr-cah"/>
                     <size key="freeformSize" width="320" height="568"/>
                     <connections>
-                        <outlet property="Navigate" destination="vno-tr-cah" id="3gn-dA-ddV"/>
                         <outlet property="SettingsTable" destination="T7o-uH-FD1" id="uw7-FI-4Pi"/>
                         <outlet property="cacheMode" destination="zkH-eh-1CE" id="4cW-ay-nAX"/>
                         <outlet property="dataSize" destination="qJU-cG-cty" id="Wy1-dL-74j"/>
-                        <outlet property="deleteCache" destination="wWh-7f-Gjs" id="xqY-eP-69f"/>
-                        <outlet property="downloadData" destination="QgD-nd-5Dp" id="yVy-tb-hSM"/>
+                        <outlet property="deleteCacheCell" destination="dtI-xU-xdH" id="VYj-1f-Phi"/>
+                        <outlet property="downloadDataCell" destination="HdI-i1-FZg" id="opo-nu-PUC"/>
                         <outlet property="imagesSize" destination="8SP-kd-FQy" id="QTN-7o-eTK"/>
                         <outlet property="refreshChoice" destination="x8I-93-gaB" id="dwJ-0b-mdr"/>
                         <outlet property="roamingMode" destination="fed-jN-cQp" id="Caq-rf-Fdj"/>
@@ -331,7 +360,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4H9-97-cr3" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="738" y="900"/>
+            <point key="canvasLocation" x="733" y="497"/>
         </scene>
         <!--Refresh Setting View Controller - Rafraîchissement-->
         <scene sceneID="K6h-48-e22">
@@ -368,7 +397,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gif-JX-gNT" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1176" y="901"/>
+            <point key="canvasLocation" x="1208" y="821"/>
         </scene>
     </scenes>
     <resources>

@@ -26,6 +26,13 @@
     return self;
 }
 
+-(void) prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([segue.identifier isEqualToString:@"refresh"]) {
+        self.goToRefresh = YES;
+    }
+}
+
 /* Add observer on :
  - the method configureApp of AppDelegate Class : it is called in background during the loading of datas. Necessary for refreshing datas & images size.
  - when RefreshSettings view will disapear for saving user choice
@@ -49,30 +56,31 @@
         cacheIsEnabled = self.cacheMode.isOn;
         roamingIsEnabled = self.roamingMode.isOn;
     }
-    
-    // Notify that settings was modified
-    // Si les settings sont bloquants : cas Cache Mode + cache = Oko, RoamingSituation + RoamingDisable => Event Conflictual Situation
-    // sinon Event Settings is Finished
-    float size = [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue];
-    if (self.cacheMode.isOn && size == 0.0) {
-        NSNotification * notif = [NSNotification notificationWithName:@"ConflictualSituationNotification" object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:notif];
-    } else if (appDel.roamingSituation && !self.roamingMode.isOn){
-        NSNotification * notif = [NSNotification notificationWithName:@"ConflictualSituationNotification" object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:notif];
-    } else if (self.reconfigNecessary) {
-        NSNotification * notif = [NSNotification notificationWithName:@"SettingsModificationNotification" object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:notif];
-    } else {
-        NSNotification * notif = [NSNotification notificationWithName:@"NoModificationNotification" object:self];
-        [[NSNotificationCenter defaultCenter] postNotification:notif];
-    }
-    
     // Register settings
     NSNumber *cache = [NSNumber numberWithBool:self.cacheMode.isOn];
     NSNumber *roaming = [NSNumber numberWithBool:self.roamingMode.isOn];
     [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:cache forKey:@"cache"]];
     [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:roaming forKey:@"roaming"]];
+    
+    // Notify that settings was modified
+    // Si les settings sont bloquants : cas Cache Mode + cache = Oko, RoamingSituation + RoamingDisable => Event Conflictual Situation
+    // sinon Event Settings is Finished
+    if (!self.goToRefresh) {
+        self.size = [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue];
+        if (self.cacheMode.isOn && self.size == 0.0) {
+            NSNotification * notif = [NSNotification notificationWithName:@"ConflictualSituationNotification" object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:notif];
+        } else if (appDel.roamingSituation && !self.roamingMode.isOn){
+            NSNotification * notif = [NSNotification notificationWithName:@"ConflictualSituationNotification" object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:notif];
+        } else if (self.reconfigNecessary) {
+            NSNotification * notif = [NSNotification notificationWithName:@"SettingsModificationNotification" object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:notif];
+        } else {
+            NSNotification * notif = [NSNotification notificationWithName:@"NoModificationNotification" object:self];
+            [[NSNotificationCenter defaultCenter] postNotification:notif];
+        }
+    }
 }
 
 - (void)configureApp:(NSNotification *)notification {
@@ -89,7 +97,6 @@
         // Alert user that downloading is finished
         self.errorMsg = [NSString stringWithFormat:@"The downloading of files is done."];
         UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Downloading Successful" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        //[alertNoConnection show];
         [alertNoConnection performSelectorOnMainThread:@selector(show) withObject:self waitUntilDone:YES];
     }
 }
@@ -109,12 +116,14 @@
         self.reconfigNecessary = YES;
     }
     self.refreshChoice.text = self.refreshValue;
+    
+    self.goToRefresh = NO;
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.navigationItem.backBarButtonItem.title = @"OK";
+    
     self.reconfigNecessary = NO;
     
     self.SettingsTable.delegate = self;
@@ -135,10 +144,9 @@
     self.refreshChoice.text = self.refreshValue;
     
     // Set Datas & Images Sizes
-    self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
+    self.size = [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue];
+    self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", self.size];
     self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
-    
-    self.downloadData.titleLabel.font = [UIFont fontWithName:@"Helvetica Neue" size:17.0];
     
     // Set Mode Cache
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"cache"]) {
@@ -158,6 +166,12 @@
         roamingIsEnabled = self.roamingMode.isOn;
     }
     
+    // If conflictual situation, block in Settings view
+    if ((self.cacheMode.isOn && self.size == 0.0) || (appDel.roamingSituation && !self.roamingMode.isOn)) {
+        self.navigationItem.hidesBackButton = YES;
+    } else {
+        self.navigationItem.hidesBackButton = NO;
+    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -170,6 +184,11 @@
     @synchronized(self){
         cacheIsEnabled = self.cacheMode.isOn;
         self.reconfigNecessary = YES;
+        if (self.cacheMode.isOn && self.size == 0.0) {
+            self.navigationItem.hidesBackButton = YES;
+        } else {
+            self.navigationItem.hidesBackButton = NO;
+        }
     }
 }
 
@@ -177,83 +196,104 @@
     @synchronized(self){
         roamingIsEnabled = self.roamingMode.isOn;
         self.reconfigNecessary = YES;
-    }
-}
-
-- (IBAction)dataLoadingClick:(id)sender {
-    @synchronized(self){
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-        self.reconfigNecessary = YES;
-        // Download all
-        @try {
-            forceDownloading = YES;
-            [appDel performSelectorInBackground:@selector(configureApp) withObject:appDel];
-        }
-        @catch (NSException *exception) {
-            if (cacheIsEnabled) {
-                self.errorMsg = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Please turn it off.";
-            } else if (!appDel.isDownloadedByNetwork) {
-                self.errorMsg = @"Impossible to download content on the server. The network connection is too low or off. Please try later.";
-            }
-            UIAlertView *alertLoadingFail = [[UIAlertView alloc] initWithTitle:@"Downloading fails" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-            [alertLoadingFail show];
-        }
-    }
-}
-
-- (IBAction)deleteCacheClick:(id)sender {
-    @synchronized(self){
-        @try {
-            NSFileManager *fm = [NSFileManager defaultManager];
-            
-            if ([fm contentsOfDirectoryAtPath:APPLICATION_SUPPORT_PATH error:nil].count > 0) {
-                NSError *err = nil;
-                for (NSString *file in [fm contentsOfDirectoryAtPath:APPLICATION_SUPPORT_PATH error:&err]) {
-                    [fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, file] error:&err];
-                }
-                if (err) {
-                    // TODO : throw exception
-                    NSLog(@"An error occured during the Deleting of cache : %@", err);
-                    NSException *e = [NSException exceptionWithName:err.localizedDescription reason:err.localizedFailureReason userInfo:err.userInfo];
-                    @throw e;
-                }
-                self.errorMsg = [NSString stringWithFormat:@"The deleting of files is done."];
-                UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Deleting Successful" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                [alertNoConnection show];
-                
-            } else {
-                self.errorMsg = [NSString stringWithFormat:@"The cache is already cleaned."];
-                UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Deleting Not Necessary" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                [alertNoConnection show];
-            }
-        }
-        @catch (NSException *e) {
-            // TODO : alertView pour informer de l'erreur
-            self.errorMsg = [NSString stringWithFormat:@"An error occured during the Deleting of cache : %@, reason : %@", e.name, e.reason];
-            UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"An Error Occured" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-            [alertNoConnection show];
-        }
-        @finally {
-            self.reconfigNecessary = YES;
-            // Refresh dataSize & imagesSize
-            self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
-            self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
+        if (appDel.roamingSituation && !self.roamingMode.isOn) {
+            self.navigationItem.hidesBackButton = YES;
+        } else {
+            self.navigationItem.hidesBackButton = NO;
         }
     }
 }
 
 #pragma mark - Table View
+- (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if ([[tableView cellForRowAtIndexPath:indexPath] isEqual:self.downloadDataCell])
+    {
+        @synchronized(self){
+            if (self.cacheMode.isOn) {
+                UIAlertView *alertConflict = [[UIAlertView alloc] initWithTitle:@"Conflictual Situation" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:@"OK",nil];
+                alertConflict.message = @"Impossible to download content. The cache mode is enabled : it blocks the downloading. Disable it for performing this action.";
+                [alertConflict show];
+            } else {
+                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+                self.reconfigNecessary = YES;
+                // Download all
+                @try {
+                    forceDownloading = YES;
+                    [appDel performSelectorInBackground:@selector(configureApp) withObject:appDel];
+                }
+                @finally {
+                    self.reconfigNecessary = YES;
+                }
+            }
+        }
+    } else if ([[tableView cellForRowAtIndexPath:indexPath] isEqual:self.deleteCacheCell]) {
+        @synchronized(self){
+            @try {
+                NSFileManager *fm = [NSFileManager defaultManager];
+                
+                if ([fm contentsOfDirectoryAtPath:APPLICATION_SUPPORT_PATH error:nil].count > 0) {
+                    NSError *err = nil;
+                    for (NSString *file in [fm contentsOfDirectoryAtPath:APPLICATION_SUPPORT_PATH error:&err]) {
+                        [fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", APPLICATION_SUPPORT_PATH, file] error:&err];
+                    }
+                    if (err) {
+                        // TODO : throw exception
+                        NSLog(@"An error occured during the Deleting of cache : %@", err);
+                        NSException *e = [NSException exceptionWithName:err.localizedDescription reason:err.localizedFailureReason userInfo:err.userInfo];
+                        @throw e;
+                    }
+                    self.errorMsg = [NSString stringWithFormat:@"The deleting of files is done."];
+                    UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Deleting Successful" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                    [alertNoConnection show];
+                    
+                } else {
+                    self.errorMsg = [NSString stringWithFormat:@"The cache is already cleaned."];
+                    UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"Deleting Not Necessary" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                    [alertNoConnection show];
+                }
+            }
+            @catch (NSException *e) {
+                // TODO : alertView pour informer de l'erreur
+                self.errorMsg = [NSString stringWithFormat:@"An error occured during the Deleting of cache : %@, reason : %@", e.name, e.reason];
+                UIAlertView *alertNoConnection = [[UIAlertView alloc] initWithTitle:@"An Error Occured" message:self.errorMsg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                [alertNoConnection show];
+            }
+            @finally {
+                self.reconfigNecessary = YES;
+                // Refresh dataSize & imagesSize
+                self.dataSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:APPLICATION_SUPPORT_PATH] floatValue]];
+                self.imagesSize.text = [NSString stringWithFormat:@"%.02f ko", [[AppDelegate getSizeOf:[NSString stringWithFormat:@"%@Images", APPLICATION_SUPPORT_PATH]] floatValue]];
+            }
+        }
+    }
+}
+
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
 {
     switch (section) {
+        case 1 :
+            return 10.0f;
         case 2:
-            return 70.0f;
+            if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+                return 20.0f;
+            } else {
+                return 50.0f;
+            }
             break;
         case 3:
-            return 40.0f;
+            if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+                return 20.0f;
+            } else {
+                return 25.0f;
+            }
             break;
         case 4:
-            return 70.0f;
+            if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+                return 20.0f;
+            } else {
+                return 50.0f;
+            }
             break;
         case 5:
             return 80.0f;
@@ -262,7 +302,27 @@
             return 20.0f;
             break;
     }
-    
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+        switch (section) {
+            case 2:
+                return 10.0f;
+                break;
+            case 3:
+                return 25.0f;
+                break;
+            case 4:
+                return 25.0f;
+                break;
+            case 5:
+                return 50.0f;
+                break;
+            default:
+                return 30.0f;
+                break;
+        }
 }
 
 - (UIView *) tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
@@ -271,8 +331,16 @@
     UILabel *sectionFooterLabel = [[UILabel alloc] initWithFrame:CGRectMake(5, 0, tableView.frame.size.width - 5, 60)];
     sectionFooterLabel.font = [UIFont fontWithName:@"Helvetica" size:13.0];
     sectionFooterLabel.textColor = [UIColor grayColor];
-    sectionFooterLabel.numberOfLines = 5;
     [sectionFooterView addSubview:sectionFooterLabel];
+    
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+        sectionFooterLabel.numberOfLines = 2;
+        sectionFooterView.frame = CGRectMake(0, 0, tableView.frame.size.width, 30);
+        sectionFooterLabel.frame = CGRectMake(5, 0, tableView.frame.size.width - 5, 30);
+    } else {
+        sectionFooterLabel.numberOfLines = 5;
+    }
+    
     
     switch (section) {
         case 2:
@@ -281,8 +349,10 @@
             break;
         case 3:
             sectionFooterLabel.text = @"Activer le mode cache empêche l'application de télécharger de nouvelles données.";
-            sectionFooterLabel.frame = CGRectMake(5, 0, tableView.frame.size.width - 5, 40);
-            sectionFooterView.frame = CGRectMake(0, 0, tableView.frame.size.width, 40);
+            if ([[UIDevice currentDevice] userInterfaceIdiom] != UIUserInterfaceIdiomPad) {
+                sectionFooterLabel.frame = CGRectMake(5, 0, tableView.frame.size.width - 5, 40);
+                sectionFooterView.frame = CGRectMake(0, 0, tableView.frame.size.width, 40);
+            }
             return sectionFooterView;
             break;
         case 4:
@@ -291,8 +361,9 @@
             break;
         case 5:
             sectionFooterLabel.text = [NSString stringWithFormat:@"Attention ! Toutes les données de l'application seront supprimées. \r\r\rVsMobile %@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]];
-            sectionFooterLabel.frame = CGRectMake(5, 0, tableView.frame.size.width - 5, 80);
-            sectionFooterView.frame = CGRectMake(0, 0, tableView.frame.size.width, 80);
+            sectionFooterLabel.numberOfLines = 5;
+                sectionFooterLabel.frame = CGRectMake(5, 0, tableView.frame.size.width - 5, 80);
+                sectionFooterView.frame = CGRectMake(0, 0, tableView.frame.size.width, 80);
             return sectionFooterView;
             break;
         default:

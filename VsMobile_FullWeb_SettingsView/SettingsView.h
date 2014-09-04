@@ -9,10 +9,9 @@
 #import <UIKit/UIKit.h>
 #import "AppDelegate.h"
 
-@interface SettingsView : UITableViewController <UIAlertViewDelegate>
+@interface SettingsView : UITableViewController <UIAlertViewDelegate, UITableViewDelegate>
 
 @property (strong, nonatomic) IBOutlet UITableView *SettingsTable;
-@property (strong, nonatomic) IBOutlet UINavigationItem *Navigate;
 
 @property (strong, nonatomic) IBOutlet UILabel *refreshChoice;
 @property (strong,nonatomic) NSString *refreshValue;
@@ -23,14 +22,16 @@
 
 @property (weak, nonatomic) IBOutlet UILabel *dataSize;
 @property (strong,nonatomic) NSString *dataSizeValue;
+@property float size;
 
 @property (weak, nonatomic) IBOutlet UILabel *imagesSize;
 @property (strong,nonatomic) NSString *imagesSizeValue;
 
-@property (weak, nonatomic) IBOutlet UIButton *downloadData;
-@property (weak, nonatomic) IBOutlet UIButton *deleteCache;
+@property (strong, nonatomic) IBOutlet UITableViewCell *downloadDataCell;
+@property (strong, nonatomic) IBOutlet UITableViewCell *deleteCacheCell;
 
 @property (strong, nonatomic) NSString *errorMsg;
 @property BOOL reconfigNecessary;
+@property BOOL goToRefresh;
 
 @end

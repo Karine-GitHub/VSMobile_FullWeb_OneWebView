@@ -22,6 +22,14 @@
     NSMutableArray *pageDependencies;
 }
 
+- (void)awakeFromNib
+{
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+        self.preferredContentSize = CGSizeMake(320.0, 600.0);
+    }
+    [super awakeFromNib];
+}
+
 // Pas appelé lors du retour depuis les settings
 - (void) viewWillAppear:(BOOL)animated
 {
@@ -40,7 +48,7 @@
 {
     [super viewWillDisappear:YES];
     
-    self.navigationItem.title = nil;
+    //self.navigationItem.title = nil;
     self.isConflictual = NO;
 }
 
@@ -85,7 +93,8 @@
                 } @finally {
                     reloadApp = NO;
                     forceDownloading = NO;
-                    [self viewDidLoad];
+                    [self webViewDidFinishLoad:self.Display];
+                    //[self viewDidLoad];
                 }
             }
         }
@@ -100,7 +109,7 @@
         if (appDel == Nil) {
             appDel = (AppDelegate *)[[UIApplication sharedApplication] delegate];
         }
-        reloadApp = YES;;
+        reloadApp = YES;
         [appDel configureApp];
     }
 }
@@ -142,6 +151,7 @@
             self.Display.hidden = YES;
         } else if (reloadApp) {
             self.navigationItem.title = @"Reconfiguration in progress";
+            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
             self.img.hidden = NO;
             self.Display.hidden = YES;
             [self performSelectorInBackground:@selector(reloadApp) withObject:self];
@@ -189,10 +199,10 @@
                 alertNoConnection.message = @"Impossible to download content file. The application will shut down. Sorry for the inconvenience.";
                 [alertNoConnection show];
             }
-        } else {
+        } /*else {
             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
             self.navigationItem.title = @"Reconfiguration in progress";
-        }
+        }*/
     }
     @catch (NSException *e) {
         errorMsg = [NSString stringWithFormat:@"An error occured during the Loading of the Application : %@, reason : %@", e.name, e.reason];
@@ -327,7 +337,7 @@
     
     int index = [APPLICATION_SUPPORT_PATH length] - 1;
     NSString *path = [APPLICATION_SUPPORT_PATH substringToIndex:index];
-
+    
     NSArray *pathComponent = [[request.URL relativePath] pathComponents];
 
     if ([[request.URL relativePath] isEqualToString:path]) {
@@ -335,8 +345,8 @@
         self.lastPath = nil;
         return YES;
     } else if ([[request.URL relativePath] isEqualToString:[NSString stringWithFormat:@"%@index.html", APPLICATION_SUPPORT_PATH]]) {
-        self.navigationItem.title = @"Menu";
         self.lastPath = [pathComponent lastObject];
+        [self configureHome];
         return YES;
     } else if ([[request.URL relativePath] isEqualToString:[NSString stringWithFormat:@"%@details.html", APPLICATION_SUPPORT_PATH]]) {
         self.lastPath = [pathComponent lastObject];
@@ -352,6 +362,10 @@
     } else if (![request.URL relativePath] && ![request.URL query] && navigationType == 5 && [self.lastPath isEqualToString:@"index.html"]) {
         self.lastPath = nil;
         [self configureHome];
+        return YES;
+    } else if (![request.URL relativePath] && ![request.URL query] && navigationType == 5 && [self.lastPath isEqualToString:@"details.html"]) {
+        self.lastPath = nil;
+        [self configureDetails];
         return YES;
     }
     
@@ -401,13 +415,6 @@
             self.shareActivity.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
             [self presentViewController:self.shareActivity animated:YES completion:nil];
         }
-            break;
-        case geolocItemTag :
-            NSLog(@"bla");
-            break;
-        case contactsItemTag :
-            NSLog(@"bla");
-            break;
         case calendarItemTag : {
             [CalendarTools requestAccess:^(BOOL granted, NSError *error) {
                 if (granted) {
@@ -466,6 +473,13 @@
             }
         }
     }
+}
+
+- (IBAction)SettingsClick:(id)sender
+{
+    /*if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+        [self.navigationController pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"settingsView"] animated:YES];
+    }*/
 }
 
 @end
